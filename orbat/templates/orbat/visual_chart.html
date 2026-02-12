@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ORBAT - Task Force LATAM [SYSTEM V.1.5]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- 1. JERARQUÍA DE COLORES MEJORADA --- */
+            --col-regiment: #ff3333; /* Rojo Mando */
+            --col-company: #00a8ff;  /* Azul Compañía */
+            --col-platoon: #fbc531;  /* Amarillo Pelotón */
+            --col-squad: #4cd137;    /* Verde Escuadra */
+            
+            --bg-dark: #1a1c1f;
+            --bg-card: #2b2b2b; /* Fondo plano original */
+        }
+
+        /* --- 2. ESTILO BASE Y NAVEGACIÓN --- */
+        body {
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            overflow: hidden; 
+            width: 100vw; height: 100vh;
+            cursor: grab;
+        }
+
+        body:active { cursor: grabbing; }
+
+        /* Efecto de líneas de escaneo CRT */
+        body::before {
+            content: " "; position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; z-index: 1000;
+        }
+
+        /* --- PANTALLA DE CARGA (BOOT SEQUENCE) --- */
+        #boot-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-family: 'Share Tech Mono', monospace; color: var(--col-squad);
+        }
+        .boot-text { font-size: 1.5em; margin-bottom: 10px; text-shadow: 0 0 10px var(--col-squad); }
+        .loader-bar { width: 300px; height: 4px; background: #333; position: relative; overflow: hidden; }
+        .loader-progress { width: 0%; height: 100%; background: var(--col-squad); animation: load 2.0s ease-out forwards; }
+        @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* --- ÁREA DE TRABAJO --- */
+        #viewport {
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #canvas {
+            transform-origin: center;
+            transition: transform 0.1s ease-out;
+            padding: 1000px;
+        }
+
+        .tf-header { 
+            font-size: 32px; color: var(--col-squad); text-transform: uppercase; 
+            letter-spacing: 4px; margin-bottom: 60px; 
+            text-shadow: 0 0 15px rgba(63, 211, 107, 0.5); text-align: center;
+        }
+
+        /* --- 3. ESTRUCTURA DEL ÁRBOL --- */
+        .tree ul {
+            padding-top: 30px; position: relative;
+            display: flex; justify-content: center;
+        }
+
+        .tree li {
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 30px 10px 0 10px;
+        }
+
+        /* LÍNEAS ANIMADAS (Cableado Táctico) */
+        .tree li::before, .tree li::after {
+            content: ''; position: absolute; top: 0; right: 50%;
+            border-top: 2px solid #555;
+            width: 50%; height: 30px;
+            animation: pulseLine 4s infinite;
+        }
+        .tree li::after { right: auto; left: 50%; border-left: 2px solid #555; }
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid #555; border-radius: 0 5px 0 0; }
+        .tree li:first-child::after { border-radius: 5px 0 0 0; }
+        .tree ul ul::before { 
+            content: ''; position: absolute; top: 0; left: 50%; 
+            border-left: 2px solid #555; width: 0; height: 30px; 
+            animation: pulseLine 4s infinite;
+        }
+
+        @keyframes pulseLine {
+            0% { border-color: #444; box-shadow: none; }
+            50% { border-color: rgba(63,211,107,0.5); box-shadow: 0 0 8px rgba(63,211,107,0.3); }
+            100% { border-color: #444; box-shadow: none; }
+        }
+
+        /* --- 4. DISEÑO DE TARJETAS (ESTILO ORIGINAL PLANO) --- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #444;
+            display: inline-block;
+            border-radius: 3px;
+            min-width: 160px;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--col-squad);
+            box-shadow: 0 0 20px rgba(63, 211, 107, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Aplicación de colores por nivel */
+        .level-regiment { border-top: 4px solid var(--col-regiment); padding: 12px; min-width: 220px; }
+        .level-regiment .unit-name { color: var(--col-regiment); } /* Texto rojo */
+        
+        .level-company { border-top: 4px solid var(--col-company); padding: 10px; }
+        .level-company .unit-name { color: var(--col-company); } /* Texto azul */
+
+        .level-platoon { border-top: 4px solid var(--col-platoon); padding: 8px; }
+        .level-platoon .unit-name { color: var(--col-platoon); } /* Texto amarillo */
+
+        .unit-name { font-weight: bold; font-size: 1.2em; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .commander-name { font-size: 0.85em; color: #888; margin-top: 5px; display: block; }
+
+        /* --- 5. ESCUADRAS Y ROSTER --- */
+        .level-squad {
+            border-top: 4px solid var(--col-squad); 
+            background-color: var(--bg-card);
+            padding: 0;
+            min-width: 210px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .squad-header {
+            background-color: #222;
+            color: var(--col-squad);
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            border-bottom: 1px solid #444;
+            text-transform: uppercase;
+        }
+
+        .roster-table { width: 100%; border-collapse: collapse; background-color: #1a1c1f; }
+        .miembro-row { border-bottom: 1px solid #2a2a2a; cursor: pointer; transition: 0.2s; }
+        .miembro-row:hover { background-color: #333; }
+        .roster-table td { padding: 8px 12px; color: #ccc; text-align: left; font-size: 0.95em; }
+        .rank-col { font-weight: bold; color: var(--col-squad); width: 45px; border-right: 1px solid #2a2a2a; text-align: center; }
+
+        /* --- 6. MODAL TÁCTICO ORIGINAL CORREGIDO --- */
+        .modal-militar {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content-militar {
+            background-color: #1a1c1f; color: var(--col-squad); margin: 8% auto; padding: 40px;
+            border: 1px solid var(--col-squad); width: 480px; font-family: 'Courier New', monospace;
+            position: relative; box-shadow: 0 0 50px rgba(63, 211, 107, 0.15);
+        }
+
+        .modal-content-militar h2 { border-bottom: 2px solid var(--col-squad); padding-bottom: 15px; margin-top: 0; color: #fff; }
+
+        .ficha-datos p { 
+            margin: 20px 0; font-size: 1.2em; border-left: 3px solid #333; padding-left: 15px;
+            display: flex; align-items: baseline; 
+        }
+
+        .ficha-datos strong { 
+            color: var(--col-squad); display: inline-block; width: 160px; flex-shrink: 0;
+        }
+
+        .ficha-datos span { flex-grow: 1; }
+
+        .close-modal { position: absolute; top: 15px; right: 25px; font-size: 35px; cursor: pointer; color: #e05a5a; }
+        .watermark { position: absolute; bottom: 10px; right: 20px; font-size: 3em; opacity: 0.03; transform: rotate(-15deg); font-weight: bold; pointer-events: none; }
+        
+        /* Botón Reset View */
+        #reset-view {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1500;
+            pointer-events: auto; font-size: 24px; color: var(--col-squad);
+            background: rgba(0,0,0,0.5); border: 1px solid var(--col-squad);
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #reset-view:hover { background: var(--col-squad); color: #000; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> 
+
+    <div id="boot-screen">
+        <div class="boot-text">LOADING ORBAT SYSTEM...</div>
+        <div class="loader-bar"><div class="loader-progress"></div></div>
+    </div>
+
+    <button id="reset-view" title="Centrar Cámara">⌖</button>
+
+    <div id="viewport">
+        <div id="canvas">
+            <div class="tf-header">★ TASK FORCE LATAM (ORBAT) ★</div>
+            
+            <div class="tree">
+                <ul>
+                    {% for reg in regimientos %}
+                    <li>
+                        <div class="card level-regiment">
+                            <span class="unit-name">{{ reg.nombre }}</span>
+                            {% if reg.comandante %}<span class="commander-name">CO: {{ reg.comandante }}</span>{% endif %}
+                        </div>
+                        <ul>
+                            {% for cia in reg.companias.all %}
+                            <li>
+                                <div class="card level-company"><span class="unit-name">{{ cia.nombre }}</span></div>
+                                <ul>
+                                    {% for plt in cia.pelotones.all %}
+                                    <li>
+                                        <div class="card level-platoon"><span class="unit-name">{{ plt.nombre }}</span></div>
+                                        <ul>
+                                            {% for sqd in plt.escuadras.all %}
+                                            <li>
+                                                <div class="card level-squad">
+                                                    <div class="squad-header">{{ sqd.nombre }}</div>
+                                                    <table class="roster-table">
+                                                        {% for m in sqd.miembro_set.all %}
+                                                        <tr class="miembro-row" onclick="mostrarFicha(this)" 
+                                                            data-nombre="{{ m.nombre_milsim|escapejs }}" 
+                                                            data-rango="{{ m.get_rango_display|escapejs }}" 
+                                                            data-rol="{{ m.get_rol_display|default:'Fusilero'|escapejs }}" 
+                                                            data-fecha="{{ m.fecha_ingreso|date:'d/m/Y'|escapejs }}">
+                                                            <td class="rank-col">{{ m.rango }}</td>
+                                                            <td>{{ m.nombre_milsim }}</td>
+                                                        </tr>
+                                                        {% empty %}
+                                                        <tr><td colspan="2" style="text-align: center; color: #555; padding: 15px;">- SECTOR VACÍO -</td></tr>
+                                                        {% endfor %}
+                                                    </table>
+                                                </div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="fichaModal" class="modal-militar">
+        <div class="modal-content-militar">
+            <span class="close-modal" onclick="cerrarFicha()">&times;</span>
+            <h2 id="modalNombre">IDENTIFICANDO...</h2>
+            <div class="ficha-datos">
+                <p><strong>RANGO:</strong> <span id="modalRango"></span></p>
+                <p><strong>ESPECIALIDAD:</strong> <span id="modalRol"></span></p>
+                <p><strong>FECHA DE ALTA:</strong> <span id="modalFecha"></span></p>
+                <p><strong>ESTADO:</strong> <span style="color: var(--col-squad);">OPERATIVO / ACTIVO</span></p>
+            </div>
+            <div class="watermark">CLASSIFIED</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. BOOT SEQUENCE ---
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('boot-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('boot-screen').style.display = 'none';
+                }, 500);
+            }, 1800); // Tiempo de carga
+        };
+
+        const canvas = document.getElementById('canvas');
+        let scale = 0.8; 
+        let isDragging = false;
+        let startX, startY;
+        let translateX = 0, translateY = 0;
+
+        updateTransform();
+
+        // --- NAVEGACIÓN PRO (ZOOM CENTRADO) ---
+        window.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            scale = Math.min(Math.max(0.2, scale + delta), 2.0);
+            updateTransform();
+        }, { passive: false });
+
+        // --- NAVEGACIÓN PRO (DRAG) ---
+        window.addEventListener('mousedown', (e) => {
+            if (e.button === 2) { 
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        function updateTransform() {
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        }
+        
+        // Botón Reset
+        document.getElementById('reset-view').onclick = function() {
+            scale = 0.8; translateX = 0; translateY = 0;
+            updateTransform();
+        };
+
+        // --- LOGICA MODAL ---
+        function mostrarFicha(elemento) {
+            document.getElementById('modalNombre').innerText = elemento.getAttribute('data-nombre');
+            document.getElementById('modalRango').innerText = elemento.getAttribute('data-rango');
+            document.getElementById('modalRol').innerText = elemento.getAttribute('data-rol');
+            document.getElementById('modalFecha').innerText = elemento.getAttribute('data-fecha');
+            document.getElementById('fichaModal').style.display = "block";
+        }
+        function cerrarFicha() { document.getElementById('fichaModal').style.display = "none"; }
+
+        window.onclick = function(event) {
+            let modal = document.getElementById('fichaModal');
+            if (event.target == modal) { modal.style.display = "none"; }
+        }
+    </script>
+</body>
+</html>

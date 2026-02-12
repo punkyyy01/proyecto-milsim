@@ -1,13 +1,8 @@
-# gestion_milsim/urls.py
-
 from django.contrib import admin
 from django.urls import path
-from orbat import views
+from orbat.views import orbat_visual # <--- Importamos la vista
 
 urlpatterns = [
-    # Corregido: Quitamos el ".admin" de en medio
-    path('admin/', admin.site.urls), 
-    
-    # Esta es la que configuramos antes
-    path('', views.orbat_publico, name='home'), 
+    path('admin/', admin.site.urls),
+    path('orbat/', orbat_visual, name='orbat_visual'), # <--- Nueva ruta
 ]
