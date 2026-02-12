@@ -18,14 +18,13 @@ class Regimiento(models.Model):
     def __str__(self):
         return self.nombre
     
-    # Dentro de class Regimiento(models.Model):
     def total_efectivos(self):
         # Cuenta todos los miembros activos en toda la cadena de mando
-        from .models import Miembro
         return Miembro.objects.filter(
-            escuadra__peloton__compania__regimiento=self, 
+            models.Q(escuadra__peloton__compania__regimiento=self) | 
+            models.Q(regimiento=self),
             activo=True
-        ).count()
+        ).distinct().count()
 
 # --- 2. NIVEL: COMPAÑÍA ---
 class Compania(models.Model):
@@ -40,12 +39,6 @@ class Compania(models.Model):
         blank=True, 
         help_text="URL del escudo"
     )
-
-    def get_comandante(self):
-        return Miembro.objects.filter(
-            escuadra__peloton__compania=self, 
-            rango='CPT'
-        ).first()
 
     class Meta:
         verbose_name = "2. Compañía"
@@ -62,12 +55,6 @@ class Peloton(models.Model):
         on_delete=models.CASCADE, 
         related_name="pelotones"
     )
-
-    def get_lider(self):
-        return Miembro.objects.filter(
-            escuadra__peloton=self, 
-            rango__in=['LT1', 'LT2'] # Corregido para usar LT1/LT2
-        ).first()
 
     class Meta:
         verbose_name = "3. Pelotón"
@@ -99,25 +86,21 @@ class Escuadra(models.Model):
 
 # --- 5. ACADEMIA ---
 class Rango(models.TextChoices):
-    # OFICIALES
     COL = 'COL', 'Coronel (COL)'
     LTC = 'LTC', 'Teniente Coronel (LTC)'
     MAJ = 'MAJ', 'Mayor (MAJ)'
     CPT = 'CPT', 'Capitán (CPT)'
     LT1 = 'LT1', 'Teniente Primero (1LT)'
     LT2 = 'LT2', 'Teniente Segundo (2LT)'
-    # WARRANT OFFICERS
     CW5 = 'CW5', 'Chief Warrant Officer 5'
     CW4 = 'CW4', 'Chief Warrant Officer 4'
     WO1 = 'WO1', 'Warrant Officer 1'
-    # NCOs
     CSM = 'CSM', 'Sargento Mayor de Comando (CSM)'
     SG1 = 'SG1', 'Sargento Primero (1SG)'
     SFC = 'SFC', 'Sargento de Primera Clase (SFC)'
     SSG = 'SSG', 'Sargento de Estado Mayor (SSG)'
     SGT = 'SGT', 'Sargento (SGT)'
     CPL = 'CPL', 'Cabo (CPL)'
-    # TROPA
     SPC = 'SPC', 'Especialista (SPC)'
     PFC = 'PFC', 'Soldado de Primera (PFC)'
     PV2 = 'PV2', 'Soldado (PV2)'
@@ -133,39 +116,30 @@ class Curso(models.Model):
 
 # --- 6. PERSONAL ---
 class Miembro(models.Model):
-    usuario = models.OneToOneField(
-        User, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True
-    )
-    
-    # Identidad
+    # Identidad y Sistema
+    usuario = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     nombre_milsim = models.CharField(max_length=100, verbose_name="Nick")
     rango = models.CharField(
         max_length=5, 
         choices=Rango.choices, 
         default=Rango.PV1
     )
-    
-    # Asignación
-    escuadra = models.ForeignKey(
-        Escuadra, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        verbose_name="Unidad Asignada"
-    )
     rol = models.CharField(max_length=100, default="Fusilero")
     
-    # Estado
+    # ASIGNACIÓN DE NIVEL (HQ o Escuadra)
+    # Estos campos son los que faltan en tu base de datos actualmente
+    regimiento = models.ForeignKey(Regimiento, on_delete=models.SET_NULL, null=True, blank=True)
+    compania = models.ForeignKey(Compania, on_delete=models.SET_NULL, null=True, blank=True)
+    peloton = models.ForeignKey(Peloton, on_delete=models.SET_NULL, null=True, blank=True)
+    escuadra = models.ForeignKey(Escuadra, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Estado y Datos Extra
     activo = models.BooleanField(default=True)
     fecha_ingreso = models.DateField(auto_now_add=True)
-    
-    # Datos Extra
     discord_id = models.CharField(max_length=50, blank=True)
     steam_id = models.CharField(max_length=50, blank=True)
     cursos = models.ManyToManyField(Curso, blank=True)
+    notas_admin = models.TextField(blank=True, null=True, verbose_name="Notas de Administración")
 
     class Meta:
         verbose_name = "Operador"
@@ -174,5 +148,3 @@ class Miembro(models.Model):
 
     def __str__(self):
         return f"[{self.rango}] {self.nombre_milsim}"
-    
-    notas_admin = models.TextField(blank=True, null=True, verbose_name="Notas de Administración")

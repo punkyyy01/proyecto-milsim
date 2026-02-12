@@ -1,169 +1,214 @@
-    /* =========================================
-    MANDO CENTRAL - TACTICAL UI THEME v3.1
-    ========================================= */
+/* =========================================
+   MANDO CENTRAL - TACTICAL UI THEME v3.2
+   ========================================= */
 
-    /* 1. IMPORTAR FUENTES TÉCNICAS */
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
+/* 1. IMPORTAR FUENTES TÉCNICAS */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
 
-    :root {
-        --bg-main: #2f343a;
-        --bg-panel: #3a4047;
-        --border-tech: #4a525c;
-        --action-green: #3fd36b; 
-        --action-blue: #3fa9f5;  
-        --action-red: #e05a5a;   
-        --action-yellow: #f2c94c; 
-        --text-muted: #b0c4de;   
-        --tech-glow: 0 0 10px rgba(63, 211, 107, 0.15);
-    }
+:root {
+    --bg-main: #2f343a;
+    --bg-panel: #3a4047;
+    --border-tech: #4a525c;
+    --action-green: #3fd36b; 
+    --action-blue: #3fa9f5;  
+    --action-red: #e05a5a;   
+    --action-yellow: #f2c94c; 
+    --text-muted: #b0c4de;   
+    --tech-glow: 0 0 10px rgba(63, 211, 107, 0.15);
+}
 
-    /* 2. ESTRUCTURA GENERAL */
-    body {
-        background-color: var(--bg-main) !important;
-        font-family: 'Roboto', sans-serif;
-        color: #e0e0e0;
-    }
+/* 2. ESTRUCTURA GENERAL */
+body {
+    background-color: var(--bg-main) !important;
+    font-family: 'Roboto', sans-serif;
+    color: #e0e0e0;
+}
 
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: #1a1c1f; }
-    ::-webkit-scrollbar-thumb { background: #4a525c; border-radius: 2px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--action-blue); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #1a1c1f; }
+::-webkit-scrollbar-thumb { background: #4a525c; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--action-blue); }
 
-    h1, h2, h3, .site-header, .brand-text {
-        font-family: 'Rajdhani', sans-serif !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+h1, h2, h3, .site-header, .brand-text {
+    font-family: 'Rajdhani', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
-    /* 3. PANELES */
-    .card, .info-box, .login-box-body, .modal-content {
-        background: linear-gradient(180deg, #3a4047 0%, #2f343a 100%) !important;
-        border: 1px solid #1f2429 !important;
-        box-shadow: 0 0 0 1px var(--border-tech) !important;
-    }
+/* 3. PANELES */
+.card, .info-box, .login-box-body, .modal-content {
+    background: linear-gradient(180deg, #3a4047 0%, #2f343a 100%) !important;
+    border: 1px solid #1f2429 !important;
+    box-shadow: 0 0 0 1px var(--border-tech) !important;
+}
 
-    /* 4. BOTONES */
-    .btn {
-        border-radius: 2px !important;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 700 !important; 
-        text-transform: uppercase;
-    }
+/* 4. BOTONES */
+.btn {
+    border-radius: 2px !important;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700 !important; 
+    text-transform: uppercase;
+}
 
-    .btn-primary, .btn-success, .btn-info {
-        background-color: var(--action-green) !important;
-        color: #111 !important; 
-        border: none !important;
-    }
+.btn-primary, .btn-success, .btn-info {
+    background-color: var(--action-green) !important;
+    color: #111 !important; 
+    border: none !important;
+}
 
-    .btn-primary:hover {
-        background-color: #32c25c !important;
-        box-shadow: 0 0 15px var(--action-green);
-    }
+.btn-primary:hover {
+    background-color: #32c25c !important;
+    box-shadow: 0 0 15px var(--action-green);
+}
 
-    /* 5. LINKS */
-    a { color: #ffffff !important; transition: all 0.2s ease; }
-    a:hover { color: var(--action-blue) !important; cursor: crosshair; }
-
-    /* 6. SIDEBAR */
-    .sidebar-dark-primary { background-color: #252a2e !important; }
-    .nav-sidebar .nav-item > .nav-link { font-family: 'JetBrains Mono', monospace !important; }
-    .nav-sidebar .nav-item > .nav-link.active {
-        background-color: #375a7f !important; 
-        border-left: 3px solid var(--action-green) !important;
-    }
-
-    /* 7. INPUTS GENERALES */
-    input, select, textarea {
-        background-color: #252a2e !important;
-        border: 1px solid var(--border-tech) !important;
-        color: #fff !important;
-    }
-
-    /* 8. NAVBAR */
-    .main-header.navbar { background-color: #1a1c1f !important; }
-
-    /* =========================================
-    9. REPARACIÓN DE SELECTORES (EXPEDIENTE)
-    ========================================= */
-
-    /* Encabezados de los cuadros (Disponibles / Elegidos) */
-    .selector-available h2, 
-    .selector-chosen h2 {
-        background: #222 !important;
-        color: var(--action-green) !important;
-        border: 1px solid #444 !important;
-        font-family: 'Rajdhani', sans-serif !important;
-        text-transform: uppercase !important;
-        padding: 8px !important;
-    }
-
-    /* Área del buscador */
-    .selector .selector-filter {
-        background: #2b2b2b !important;
-        border: 1px solid #444 !important;
-        border-bottom: none !important;
-    }
-
-    /* Input del buscador */
-    .selector .selector-filter input {
-        background: #1a1c1f !important;
-        color: white !important;
-        border: 1px solid var(--action-green) !important;
-        margin: 5px !important;
-    }
-
-    /* Cajas de selección (Lista de nombres) */
-    .selector select {
-        background-color: #1a1c1f !important;
-        color: #ccc !important;
-        border: 1px solid #444 !important;
-        height: 200px !important; /* Asegura un tamaño cómodo */
-    }
-
-    /* Botones de acción (Seleccionar todos / Limpiar) */
-    .selector-chooseall, 
-    .selector-clearall {
-        color: var(--action-green) !important;
-        font-weight: bold !important;
-        background: transparent !important;
-        border: 1px solid #444 !important;
-        margin: 5px !important;
-        padding: 3px 8px !important;
-    }
-
-    .selector-chooseall:hover, 
-    .selector-clearall:hover {
-        background: var(--action-green) !important;
-        color: #000 !important;
-    }
-
-    /* Iconos de flechas */
-    .selector .active {
-        background-color: var(--action-green) !important;
-    }
-
-    /* Tablas del Admin */
-    .table thead th {
-        border-bottom: 2px solid var(--action-green) !important;
-        color: #fff;
-        font-family: 'Rajdhani', sans-serif;
-    }
-
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(255,255,255,0.03) !important;
-    }
-
-    /* 5. LINKS E INTERACCIONES (Sin subrayado global) */
+/* 5. LINKS E INTERACCIONES (Sin subrayado global) */
 a, a:hover, a:focus, a:active, a:visited {
-    text-decoration: none !important; /* Elimina el subrayado */
-    color: #ffffff !important;        /* Mantiene el color blanco */
+    text-decoration: none !important;
+    color: #ffffff !important;
     transition: all 0.2s ease;
-    outline: none !important;         /* Quita el borde de enfoque */
+    outline: none !important;
 }
 
 a:hover {
     color: var(--action-blue) !important; 
     text-shadow: 0 0 8px var(--action-blue); 
     cursor: crosshair; 
+}
+
+/* 6. SIDEBAR */
+.sidebar-dark-primary { background-color: #252a2e !important; }
+.nav-sidebar .nav-item > .nav-link { font-family: 'JetBrains Mono', monospace !important; }
+.nav-sidebar .nav-item > .nav-link.active {
+    background-color: #375a7f !important; 
+    border-left: 3px solid var(--action-green) !important;
+}
+
+/* 7. INPUTS GENERALES */
+input, select, textarea {
+    background-color: #252a2e !important;
+    border: 1px solid var(--border-tech) !important;
+    color: #fff !important;
+}
+
+/* 8. NAVBAR */
+.main-header.navbar { background-color: #1a1c1f !important; }
+
+/* =========================================
+   9. SELECTORES (Cursos y Múltiples)
+   OPTIMIZADO PARA DOBLE CLICK
+   ========================================= */
+
+/* Contenedor principal: Flex para alinear cajas */
+.selector {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+}
+
+/* Ocultar botones del medio (flechas) */
+.selector .selector-chooser {
+    display: none !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Cajas de selección (Disponibles y Elegidos) */
+.selector .selector-available, 
+.selector .selector-chosen {
+    width: 49% !important; /* Ocupan casi todo el ancho */
+    margin: 0 !important;
+    float: none !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Encabezados de los cuadros */
+.selector-available h2, 
+.selector-chosen h2 {
+    background: #222 !important;
+    color: var(--action-green) !important;
+    border: 1px solid #444 !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    text-transform: uppercase !important;
+    padding: 8px !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+}
+
+/* Área del buscador */
+.selector .selector-filter {
+    background: #2b2b2b !important;
+    border: 1px solid #444 !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    padding: 5px !important;
+}
+
+/* Input del buscador */
+.selector .selector-filter input {
+    background: #1a1c1f !important;
+    color: white !important;
+    border: 1px solid var(--action-green) !important;
+    margin: 0 !important;
+    width: 95% !important;
+}
+
+/* EL SELECT REAL (Lista de nombres) */
+.selector select {
+    background-color: #1a1c1f !important;
+    color: #ccc !important;
+    border: 1px solid #444 !important;
+    height: 250px !important; /* Más alto para ver más cursos */
+    width: 100% !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 13px !important;
+}
+
+/* Opciones dentro del select */
+.selector select option {
+    padding: 4px 8px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.selector select option:hover {
+    background-color: #333 !important;
+    cursor: pointer;
+}
+
+/* Botones pequeños de acción (Seleccionar todos / Limpiar) */
+.selector-chooseall, 
+.selector-clearall {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    color: var(--action-green) !important;
+    font-weight: bold !important;
+    background: #2b2b2b !important;
+    border: 1px solid #444 !important;
+    border-top: none !important;
+    padding: 5px !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+}
+
+.selector-chooseall:hover, 
+.selector-clearall:hover {
+    background: var(--action-green) !important;
+    color: #000 !important;
+}
+
+/* =========================================
+   10. TABLAS DEL ADMIN
+   ========================================= */
+.table thead th {
+    border-bottom: 2px solid var(--action-green) !important;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255,255,255,0.03) !important;
 }

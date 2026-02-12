@@ -1,0 +1,9 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    
+    <a href="." class="btn btn-danger btn-sm" style="margin-left: 10px;" title="Borrar todas las búsquedas y filtros">
+        <i class="fas fa-broom"></i> Limpiar Filtros
+    </a>
+{% endblock %}

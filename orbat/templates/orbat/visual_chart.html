@@ -2,35 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>ORBAT - Task Force LATAM [SYSTEM V.1.5]</title>
+    <title>ORBAT - Task Force LATAM [SYSTEM V.FINAL]</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* --- 1. JERARQUÍA DE COLORES MEJORADA --- */
-            --col-regiment: #ff3333; /* Rojo Mando */
-            --col-company: #00a8ff;  /* Azul Compañía */
-            --col-platoon: #fbc531;  /* Amarillo Pelotón */
-            --col-squad: #4cd137;    /* Verde Escuadra */
-            
+            /* --- COLORES --- */
+            --col-regiment: #ff3333; 
+            --col-company: #00a8ff;  
+            --col-platoon: #fbc531;  
+            --col-squad: #4cd137;    
             --bg-dark: #1a1c1f;
-            --bg-card: #2b2b2b; /* Fondo plano original */
+            --bg-card: #2b2b2b;
+            --line-inactive: #444; /* Color línea apagada */
+            --line-active: #fff;   /* Color línea encendida */
         }
 
-        /* --- 2. ESTILO BASE Y NAVEGACIÓN --- */
+        /* --- BASE --- */
         body {
             background-color: var(--bg-dark);
             color: #e0e0e0;
             font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            overflow: hidden; 
+            margin: 0; overflow: hidden; 
             width: 100vw; height: 100vh;
-            cursor: grab;
+            cursor: grab; user-select: none;
         }
-
         body:active { cursor: grabbing; }
 
-        /* Efecto de líneas de escaneo CRT */
+        /* Efecto CRT */
         body::before {
             content: " "; position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
@@ -40,170 +39,144 @@
             pointer-events: none; z-index: 1000;
         }
 
-        /* --- PANTALLA DE CARGA (BOOT SEQUENCE) --- */
+        /* Pantalla de Carga */
         #boot-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             font-family: 'Share Tech Mono', monospace; color: var(--col-squad);
+            transition: opacity 0.5s ease;
         }
-        .boot-text { font-size: 1.5em; margin-bottom: 10px; text-shadow: 0 0 10px var(--col-squad); }
-        .loader-bar { width: 300px; height: 4px; background: #333; position: relative; overflow: hidden; }
+        .loader-bar { width: 300px; height: 4px; background: #333; margin-top: 10px; position: relative; overflow: hidden; }
         .loader-progress { width: 0%; height: 100%; background: var(--col-squad); animation: load 2.0s ease-out forwards; }
         @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
 
-        /* --- ÁREA DE TRABAJO --- */
-        #viewport {
-            width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-        }
-
-        #canvas {
-            transform-origin: center;
-            transition: transform 0.1s ease-out;
-            padding: 1000px;
-        }
-
+        /* Viewport */
+        #viewport { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        #canvas { transform-origin: center; transition: transform 0.1s ease-out; padding: 1000px; }
         .tf-header { 
             font-size: 32px; color: var(--col-squad); text-transform: uppercase; 
-            letter-spacing: 4px; margin-bottom: 60px; 
-            text-shadow: 0 0 15px rgba(63, 211, 107, 0.5); text-align: center;
+            letter-spacing: 4px; margin-bottom: 60px; text-align: center;
+            text-shadow: 0 0 15px rgba(63, 211, 107, 0.5);
         }
 
-        /* --- 3. ESTRUCTURA DEL ÁRBOL --- */
-        .tree ul {
-            padding-top: 30px; position: relative;
-            display: flex; justify-content: center;
-        }
+        /* --- ARBOL Y CONECTORES (Layout Base) --- */
+        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
+        .tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.5s ease; }
 
-        .tree li {
-            float: left; text-align: center;
-            list-style-type: none;
-            position: relative;
-            padding: 30px 10px 0 10px;
-        }
-
-        /* LÍNEAS ANIMADAS (Cableado Táctico) */
+        /* LÍNEAS BASE (GRISES) */
+        /* Brazo Izquierdo (Before) y Derecho/Vertical (After) */
         .tree li::before, .tree li::after {
-            content: ''; position: absolute; top: 0; right: 50%;
-            border-top: 2px solid #555;
-            width: 50%; height: 30px;
-            animation: pulseLine 4s infinite;
+            content: ''; position: absolute; top: 0; 
+            width: 50%; height: 20px;
+            border-top: 2px solid var(--line-inactive); 
+            transition: border-color 0.4s ease, opacity 0.4s ease;
         }
-        .tree li::after { right: auto; left: 50%; border-left: 2px solid #555; }
-        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li::before { right: 50%; }
+        .tree li::after { right: auto; left: 50%; border-left: 2px solid var(--line-inactive); }
+        
+        /* Limpieza de líneas base (First/Last child) */
+        .tree li:only-child::after { border-top: none; }
+        .tree li:only-child::before { display: none; }
         .tree li:only-child { padding-top: 0; }
-        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-        .tree li:last-child::before { border-right: 2px solid #555; border-radius: 0 5px 0 0; }
+        .tree li:first-child::before { border: 0 none; }
+        .tree li:last-child::after { border-top: none; }
+        .tree li:last-child::before { border-radius: 0 5px 0 0; }
         .tree li:first-child::after { border-radius: 5px 0 0 0; }
+        
+        /* Línea vertical que baja del UL padre (Tallo Central) */
         .tree ul ul::before { 
             content: ''; position: absolute; top: 0; left: 50%; 
-            border-left: 2px solid #555; width: 0; height: 30px; 
-            animation: pulseLine 4s infinite;
+            border-left: 2px solid var(--line-inactive); 
+            width: 0; height: 20px; transition: border-color 0.4s ease;
         }
+        .tree > ul > li::before, .tree > ul > li::after { display: none !important; }
+        .tree > ul > li { padding-top: 0 !important; }
 
-        @keyframes pulseLine {
-            0% { border-color: #444; box-shadow: none; }
-            50% { border-color: rgba(63,211,107,0.5); box-shadow: 0 0 8px rgba(63,211,107,0.3); }
-            100% { border-color: #444; box-shadow: none; }
-        }
-
-        /* --- 4. DISEÑO DE TARJETAS (ESTILO ORIGINAL PLANO) --- */
+        /* --- TARJETAS --- */
         .card {
-            background: var(--bg-card);
-            border: 1px solid #444;
-            display: inline-block;
-            border-radius: 3px;
-            min-width: 160px;
-            position: relative;
-            z-index: 10;
-            transition: all 0.3s ease;
+            background: var(--bg-card); border: 1px solid #444; display: inline-block;
+            border-radius: 3px; min-width: 160px; position: relative; z-index: 10;
+            transition: all 0.3s ease; cursor: pointer;
         }
+        .card:hover { border-color: var(--col-squad); box-shadow: 0 0 20px rgba(63, 211, 107, 0.3); transform: translateY(-2px); z-index: 11; }
 
-        .card:hover {
-            border-color: var(--col-squad);
-            box-shadow: 0 0 20px rgba(63, 211, 107, 0.3);
-            transform: translateY(-2px);
-        }
-
-        /* Aplicación de colores por nivel */
+        /* Niveles (Colores) */
         .level-regiment { border-top: 4px solid var(--col-regiment); padding: 12px; min-width: 220px; }
-        .level-regiment .unit-name { color: var(--col-regiment); } /* Texto rojo */
-        
+        .level-regiment .unit-name { color: var(--col-regiment); }
         .level-company { border-top: 4px solid var(--col-company); padding: 10px; }
-        .level-company .unit-name { color: var(--col-company); } /* Texto azul */
-
+        .level-company .unit-name { color: var(--col-company); }
         .level-platoon { border-top: 4px solid var(--col-platoon); padding: 8px; }
-        .level-platoon .unit-name { color: var(--col-platoon); } /* Texto amarillo */
-
-        .unit-name { font-weight: bold; font-size: 1.2em; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .level-platoon .unit-name { color: var(--col-platoon); }
+        .unit-name { font-weight: bold; font-size: 1.2em; display: block; text-transform: uppercase; }
         .commander-name { font-size: 0.85em; color: #888; margin-top: 5px; display: block; }
-
-        /* --- 5. ESCUADRAS Y ROSTER --- */
-        .level-squad {
-            border-top: 4px solid var(--col-squad); 
-            background-color: var(--bg-card);
-            padding: 0;
-            min-width: 210px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .squad-header {
-            background-color: #222;
-            color: var(--col-squad);
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1em;
-            border-bottom: 1px solid #444;
-            text-transform: uppercase;
-        }
-
+        
+        .level-squad { border-top: 4px solid var(--col-squad); background-color: var(--bg-card); padding: 0; min-width: 210px; }
+        .squad-header { background-color: #222; color: var(--col-squad); padding: 10px; font-weight: bold; border-bottom: 1px solid #444; }
         .roster-table { width: 100%; border-collapse: collapse; background-color: #1a1c1f; }
         .miembro-row { border-bottom: 1px solid #2a2a2a; cursor: pointer; transition: 0.2s; }
         .miembro-row:hover { background-color: #333; }
         .roster-table td { padding: 8px 12px; color: #ccc; text-align: left; font-size: 0.95em; }
         .rank-col { font-weight: bold; color: var(--col-squad); width: 45px; border-right: 1px solid #2a2a2a; text-align: center; }
 
-        /* --- 6. MODAL TÁCTICO ORIGINAL CORREGIDO --- */
-        .modal-militar {
-            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
-            width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
-            backdrop-filter: blur(8px);
-        }
-
-        .modal-content-militar {
-            background-color: #1a1c1f; color: var(--col-squad); margin: 8% auto; padding: 40px;
-            border: 1px solid var(--col-squad); width: 480px; font-family: 'Courier New', monospace;
-            position: relative; box-shadow: 0 0 50px rgba(63, 211, 107, 0.15);
-        }
-
-        .modal-content-militar h2 { border-bottom: 2px solid var(--col-squad); padding-bottom: 15px; margin-top: 0; color: #fff; }
-
-        .ficha-datos p { 
-            margin: 20px 0; font-size: 1.2em; border-left: 3px solid #333; padding-left: 15px;
-            display: flex; align-items: baseline; 
-        }
-
-        .ficha-datos strong { 
-            color: var(--col-squad); display: inline-block; width: 160px; flex-shrink: 0;
-        }
-
-        .ficha-datos span { flex-grow: 1; }
-
+        /* Modal */
+        .modal-militar { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+        .modal-content-militar { background-color: #1a1c1f; color: var(--col-squad); margin: 8% auto; padding: 40px; border: 1px solid var(--col-squad); width: 480px; font-family: 'Courier New', monospace; box-shadow: 0 0 50px rgba(63, 211, 107, 0.15); position: relative; }
         .close-modal { position: absolute; top: 15px; right: 25px; font-size: 35px; cursor: pointer; color: #e05a5a; }
+        .ficha-datos p { margin: 20px 0; font-size: 1.2em; border-left: 3px solid #333; padding-left: 15px; display: flex; align-items: baseline; }
+        .ficha-datos strong { color: var(--col-squad); width: 160px; display: inline-block; }
         .watermark { position: absolute; bottom: 10px; right: 20px; font-size: 3em; opacity: 0.03; transform: rotate(-15deg); font-weight: bold; pointer-events: none; }
         
-        /* Botón Reset View */
-        #reset-view {
-            position: fixed; bottom: 20px; right: 20px; z-index: 1500;
-            pointer-events: auto; font-size: 24px; color: var(--col-squad);
-            background: rgba(0,0,0,0.5); border: 1px solid var(--col-squad);
-            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
+        #reset-view { position: fixed; bottom: 20px; right: 20px; z-index: 1500; font-size: 24px; color: var(--col-squad); background: rgba(0,0,0,0.5); border: 1px solid var(--col-squad); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         #reset-view:hover { background: var(--col-squad); color: #000; }
+
+        /* --- LOGICA DE FOCO (CSS CORREGIDO) --- */
+        
+        /* 1. Estado "Filtering": Oscurecemos las TARJETAS, no los LIs */
+        .tree.filtering .card {
+            opacity: 0.15;
+            filter: grayscale(100%) blur(1px);
+            transform: scale(0.95);
+        }
+
+        /* 2. Tarjeta Activa: Se ilumina */
+        .tree.filtering li.active-path > .card {
+            opacity: 1;
+            filter: none;
+            transform: scale(1.05);
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+            border-color: #eee;
+        }
+
+        /* 3. Líneas Verticales Activas */
+        /* Línea que baja del UL padre hacia el grupo de hijos */
+        .tree.filtering ul.active-path::before {
+            border-left-color: var(--line-active) !important;
+            filter: drop-shadow(0 0 4px var(--line-active));
+            z-index: 50;
+        }
+        /* Línea vertical propia del LI (que baja hacia la tarjeta) */
+        .tree.filtering li.active-vertical::after {
+            border-left-color: var(--line-active) !important;
+            filter: drop-shadow(0 0 2px var(--line-active));
+            z-index: 51;
+        }
+
+        /* 4. Líneas Horizontales (Puentes Precisos) */
+        /* Brazo izquierdo (Before) se ilumina */
+        .tree.filtering li.connect-left::before {
+            border-top-color: var(--line-active) !important;
+            filter: drop-shadow(0 0 2px var(--line-active));
+            z-index: 50;
+        }
+        /* Brazo derecho (After) se ilumina */
+        .tree.filtering li.connect-right::after {
+            border-top-color: var(--line-active) !important;
+            filter: drop-shadow(0 0 2px var(--line-active));
+            z-index: 50;
+        }
+
     </style>
 </head>
 <body oncontextmenu="return false;"> 
@@ -213,7 +186,7 @@
         <div class="loader-bar"><div class="loader-progress"></div></div>
     </div>
 
-    <button id="reset-view" title="Centrar Cámara">⌖</button>
+    <button id="reset-view" title="Resetear Vista">⌖</button>
 
     <div id="viewport">
         <div id="canvas">
@@ -223,22 +196,26 @@
                 <ul>
                     {% for reg in regimientos %}
                     <li>
-                        <div class="card level-regiment">
+                        <div class="card level-regiment" onclick="toggleFoco(this, event)">
                             <span class="unit-name">{{ reg.nombre }}</span>
                             {% if reg.comandante %}<span class="commander-name">CO: {{ reg.comandante }}</span>{% endif %}
                         </div>
                         <ul>
                             {% for cia in reg.companias.all %}
                             <li>
-                                <div class="card level-company"><span class="unit-name">{{ cia.nombre }}</span></div>
+                                <div class="card level-company" onclick="toggleFoco(this, event)">
+                                    <span class="unit-name">{{ cia.nombre }}</span>
+                                </div>
                                 <ul>
                                     {% for plt in cia.pelotones.all %}
                                     <li>
-                                        <div class="card level-platoon"><span class="unit-name">{{ plt.nombre }}</span></div>
+                                        <div class="card level-platoon" onclick="toggleFoco(this, event)">
+                                            <span class="unit-name">{{ plt.nombre }}</span>
+                                        </div>
                                         <ul>
                                             {% for sqd in plt.escuadras.all %}
                                             <li>
-                                                <div class="card level-squad">
+                                                <div class="card level-squad" onclick="toggleFoco(this, event)">
                                                     <div class="squad-header">{{ sqd.nombre }}</div>
                                                     <table class="roster-table">
                                                         {% for m in sqd.miembro_set.all %}
@@ -290,34 +267,32 @@
         window.onload = function() {
             setTimeout(() => {
                 document.getElementById('boot-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('boot-screen').style.display = 'none';
-                }, 500);
-            }, 1800); // Tiempo de carga
+                setTimeout(() => { document.getElementById('boot-screen').style.display = 'none'; }, 500);
+            }, 1500);
         };
 
+        // --- 2. NAVEGACIÓN (Zoom y Pan) ---
         const canvas = document.getElementById('canvas');
-        let scale = 0.8; 
-        let isDragging = false;
-        let startX, startY;
-        let translateX = 0, translateY = 0;
+        let scale = 0.8; let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
 
         updateTransform();
 
-        // --- NAVEGACIÓN PRO (ZOOM CENTRADO) ---
         window.addEventListener('wheel', (e) => {
+            if (e.target.closest('.modal-content-militar')) return; 
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            scale = Math.min(Math.max(0.2, scale + delta), 2.0);
+            scale = Math.min(Math.max(0.2, scale + delta), 2.5);
             updateTransform();
         }, { passive: false });
 
-        // --- NAVEGACIÓN PRO (DRAG) ---
         window.addEventListener('mousedown', (e) => {
-            if (e.button === 2) { 
+            if (e.button === 2 || e.button === 0) { 
+                if (e.button === 0 && e.target.closest('.card')) return; 
                 isDragging = true;
                 startX = e.clientX - translateX;
                 startY = e.clientY - translateY;
+                document.body.style.cursor = "grabbing";
             }
         });
 
@@ -328,20 +303,119 @@
             updateTransform();
         });
 
-        window.addEventListener('mouseup', () => isDragging = false);
-
-        function updateTransform() {
-            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-        }
+        window.addEventListener('mouseup', () => { isDragging = false; document.body.style.cursor = "grab"; });
+        function updateTransform() { canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; }
         
-        // Botón Reset
         document.getElementById('reset-view').onclick = function() {
-            scale = 0.8; translateX = 0; translateY = 0;
-            updateTransform();
+            scale = 0.8; translateX = 0; translateY = 0; updateTransform(); resetFoco();
         };
 
-        // --- LOGICA MODAL ---
+        // --- 3. LÓGICA DE FOCO (CORREGIDA Y FINAL) ---
+        function toggleFoco(elementoCard, event) {
+            event.stopPropagation();
+            if (event.target.closest('.miembro-row')) return;
+
+            const treeRoot = document.querySelector('.tree');
+            const liActual = elementoCard.closest('li');
+
+            resetFoco(); 
+            treeRoot.classList.add('filtering');
+
+            // A) ACTIVAR NODO ACTUAL Y DESCENDIENTES
+            liActual.classList.add('active-path'); 
+            liActual.classList.add('active-vertical'); 
+
+            const descendientes = liActual.querySelectorAll('li');
+            descendientes.forEach(nodo => {
+                nodo.classList.add('active-path');
+                nodo.classList.add('active-vertical');
+                nodo.classList.add('connect-left', 'connect-right'); 
+            });
+            liActual.querySelectorAll('ul').forEach(ul => ul.classList.add('active-path'));
+
+            // B) ACTIVAR ANCESTROS (CAMINAR HACIA ARRIBA)
+            let currentLi = liActual;
+            
+            while (currentLi) {
+                currentLi.classList.add('active-path');
+                currentLi.classList.add('active-vertical'); 
+
+                const parentUl = currentLi.parentElement;
+                if (!parentUl || parentUl.className.includes('tree')) break;
+
+                // Iluminar la línea vertical que baja del padre
+                parentUl.classList.add('active-path');
+
+                // CALCULAR EL PUENTE HORIZONTAL EXACTO
+                colorearPuenteHorizontal(currentLi, parentUl);
+
+                // Subir nivel
+                if (parentUl.parentElement.tagName === 'LI') {
+                    currentLi = parentUl.parentElement;
+                } else {
+                    currentLi = null;
+                }
+            }
+        }
+
+        // --- ALGORITMO CORREGIDO DE PUENTES ---
+        function colorearPuenteHorizontal(targetLi, parentUl) {
+            const siblings = Array.from(parentUl.children).filter(el => el.tagName === 'LI');
+            const total = siblings.length;
+            if (total <= 1) return; 
+
+            const targetIndex = siblings.indexOf(targetLi);
+            const centerIndex = (total - 1) / 2; // Centro matemático exacto
+
+            siblings.forEach((sibling, index) => {
+                // Importante: No limpiamos clases aquí para no borrar lo que hizo un paso anterior
+                // pero como partimos de resetFoco() está bien.
+
+                // CASO 1: Objetivo a la IZQUIERDA del Centro
+                if (targetIndex < centerIndex) {
+                    // Brazo derecho para nodos desde el objetivo hacia el centro
+                    if (index >= targetIndex && index < centerIndex) {
+                        sibling.classList.add('connect-right');
+                    }
+                    // Brazo izquierdo para nodos intermedios que reciben la conexión
+                    if (index > targetIndex && index <= centerIndex) {
+                        sibling.classList.add('connect-left');
+                    }
+                }
+
+                // CASO 2: Objetivo a la DERECHA del Centro
+                else if (targetIndex > centerIndex) {
+                    // Brazo izquierdo para nodos desde el objetivo hacia el centro
+                    if (index > centerIndex && index <= targetIndex) {
+                        sibling.classList.add('connect-left');
+                    }
+                    // Brazo derecho para nodos intermedios que reciben la conexión
+                    if (index >= centerIndex && index < targetIndex) {
+                        sibling.classList.add('connect-right');
+                    }
+                }
+            });
+        }
+
+        function resetFoco() {
+            const treeRoot = document.querySelector('.tree');
+            treeRoot.classList.remove('filtering');
+            
+            const clases = ['active-path', 'active-vertical', 'connect-left', 'connect-right'];
+            clases.forEach(cls => {
+                document.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target.id === 'viewport' || e.target.id === 'canvas') {
+                resetFoco();
+            }
+        });
+
+        // --- 4. MODAL ---
         function mostrarFicha(elemento) {
+            if (window.event) window.event.stopPropagation();
             document.getElementById('modalNombre').innerText = elemento.getAttribute('data-nombre');
             document.getElementById('modalRango').innerText = elemento.getAttribute('data-rango');
             document.getElementById('modalRol').innerText = elemento.getAttribute('data-rol');
@@ -349,11 +423,7 @@
             document.getElementById('fichaModal').style.display = "block";
         }
         function cerrarFicha() { document.getElementById('fichaModal').style.display = "none"; }
-
-        window.onclick = function(event) {
-            let modal = document.getElementById('fichaModal');
-            if (event.target == modal) { modal.style.display = "none"; }
-        }
+        document.getElementById('fichaModal').onclick = function(event) { if (event.target === this) this.style.display = "none"; }
     </script>
 </body>
 </html>
