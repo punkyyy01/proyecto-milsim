@@ -1,0 +1,241 @@
+/* =========================================
+   MANDO CENTRAL - TACTICAL UI THEME v2.6 (Black Ops Bar)
+   ========================================= */
+
+/* 1. IMPORTAR FUENTES TÉCNICAS */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
+
+:root {
+    /* Paleta Base - Gris Frío */
+    --bg-main: #2f343a;
+    --bg-panel: #3a4047;
+    --border-tech: #4a525c;
+    
+    /* Colores de Acción */
+    --action-green: #3fd36b; /* Crear/Guardar */
+    --action-blue: #3fa9f5;  /* Modificar/Links */
+    --action-red: #e05a5a;   /* Eliminar/Peligro */
+    --action-yellow: #f2c94c; /* Advertencia */
+    
+    /* Efectos */
+    --tech-glow: 0 0 10px rgba(63, 211, 107, 0.15);
+}
+
+/* 2. ESTRUCTURA GENERAL */
+body {
+    background-color: var(--bg-main) !important;
+    font-family: 'Roboto', sans-serif;
+    color: #e0e0e0;
+}
+
+/* Títulos con fuente "Sci-Fi/Militar" */
+h1, h2, h3, .site-header, .brand-text {
+    font-family: 'Rajdhani', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 3. PANELES (ESTILO INDUSTRIAL) */
+.card, .info-box, .login-box-body {
+    background: linear-gradient(180deg, #3a4047 0%, #2f343a 100%) !important;
+    border: 1px solid #1f2429 !important;
+    box-shadow: 0 0 0 1px var(--border-tech) !important;
+    border-radius: 4px !important;
+}
+
+.card-header {
+    background-color: rgba(0,0,0,0.2) !important;
+    border-bottom: 1px solid var(--border-tech) !important;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    color: var(--action-green) !important;
+}
+
+/* 4. BOTONES TÁCTICOS (CORREGIDOS: TEXTO NEGRO) */
+.btn {
+    border-radius: 2px !important;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700 !important; /* Texto más grueso */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.2) !important;
+}
+
+/* Botón Principal (Guardar/Añadir) - VERDE TÁCTICO + TEXTO OSCURO */
+.btn-primary, .btn-success, .btn-info {
+    background-color: var(--action-green) !important;
+    color: #111 !important; /* <-- TEXTO CASI NEGRO PARA LEERSE BIEN */
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: none !important;
+}
+
+.btn-primary:hover, .btn-success:hover, .btn-info:hover {
+    background-color: #32c25c !important;
+    color: #000 !important; /* Negro puro al pasar el mouse */
+    box-shadow: 0 0 15px var(--action-green); /* GLOW INTENSO */
+    border-color: rgba(255,255,255,0.5) !important;
+    cursor: pointer;
+}
+
+/* Botón Secundario/Peligro - ROJO TÁCTICO */
+.btn-danger {
+    background-color: var(--action-red) !important;
+    border-color: rgba(0,0,0,0.3) !important;
+    color: #fff !important; /* El blanco sobre rojo se lee bien */
+}
+
+.btn-danger:hover {
+    background-color: #ff4444 !important;
+    color: #fff !important;
+    box-shadow: 0 0 15px var(--action-red);
+}
+
+/* 5. LINKS E INTERACCIONES (CORREGIDOS: BLANCO BASE) */
+a {
+    color: #ffffff !important; /* Blanco puro por defecto */
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: var(--action-blue) !important; /* Azul eléctrico al pasar */
+    text-shadow: 0 0 8px var(--action-blue); /* Pequeño brillo azul */
+    cursor: crosshair; /* Cursor de mira */
+    text-decoration: none !important;
+}
+
+/* 6. LOGS Y BARRAS LATERALES (ESTILO TERMINAL) */
+.sidebar-dark-primary {
+    background-color: #252a2e !important;
+    border-right: 1px solid var(--border-tech);
+}
+
+/* Elementos de la lista lateral */
+.nav-sidebar .nav-item > .nav-link {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.9rem;
+    border-left: 3px solid transparent;
+}
+
+/* Corrección de color en el menú para que no se pierda el texto */
+.nav-link p, .nav-link i {
+    color: #b0c4de !important; /* Gris azulado suave */
+}
+
+.nav-sidebar .nav-item > .nav-link:hover {
+    background-color: rgba(255,255,255,0.05) !important;
+    color: #fff !important;
+}
+
+.nav-sidebar .nav-item > .nav-link.active {
+    background-color: rgba(63, 211, 107, 0.1) !important;
+    border-left: 3px solid var(--action-green) !important;
+}
+
+.nav-sidebar .nav-item > .nav-link.active p, 
+.nav-sidebar .nav-item > .nav-link.active i {
+    color: var(--action-green) !important; /* Verde activo */
+    font-weight: bold;
+}
+
+/* Historial reciente (Dashboard) */
+.timeline-item {
+    background: transparent !important;
+    border-left: 1px solid var(--border-tech);
+    padding-left: 15px;
+}
+
+.timeline-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--action-blue) !important;
+}
+
+/* 7. INPUTS Y FORMULARIOS (SOLIDOS) */
+input, select, textarea {
+    background-color: #252a2e !important;
+    border: 1px solid var(--border-tech) !important;
+    color: #fff !important;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+input:focus, select:focus {
+    border-color: var(--action-blue) !important;
+    box-shadow: 0 0 5px rgba(63, 169, 245, 0.3) !important;
+}
+
+/* =========================================
+   8. NUEVO: BARRA SUPERIOR (TOP NAV) - ESTILO BLACK OPS v2 (Alineado y Gris)
+   ========================================= */
+
+/* 1. La barra principal: GRIS MUY OSCURO y ALINEADA */
+.main-header.navbar {
+    background-color: #1a1c1f !important; /* Gris oscuro profundo en vez de negro puro */
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important; /* Borde más sutil */
+    /* Forzamos la alineación vertical perfecta */
+    display: flex !important;
+    align-items: center !important;
+    min-height: 50px !important; /* Asegura una altura mínima */
+}
+
+/* 2. Elementos dentro de la barra (Iconos, Enlaces) */
+/* Quitamos el padding por defecto de Bootstrap y los centramos */
+.main-header .navbar-nav .nav-item,
+.main-header .navbar-nav .nav-link,
+.main-header .widget-control-sidebar {
+     display: flex !important;
+     align-items: center !important;
+     height: 100% !important; /* Ocupan toda la altura de la barra */
+     padding-top: 0 !important;
+     padding-bottom: 0 !important;
+     margin-bottom: 0 !important;
+}
+
+/* Color de los iconos y texto */
+.main-header .navbar-nav .nav-link,
+.main-header .navbar-nav .nav-link i {
+     color: #c2c7d0 !important; /* Gris claro hueso */
+}
+.main-header .navbar-nav .nav-link:hover,
+.main-header .navbar-nav .nav-link:hover i {
+     color: #ffffff !important; /* Blanco puro al pasar el mouse */
+}
+
+/* 3. El input del buscador: BLANCO CON TEXTO NEGRO */
+/* Lo centramos también por si acaso */
+.main-header .form-inline {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.main-header .form-control-navbar {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 4px 0 0 4px !important; /* Redondeado solo a la izquierda */
+    height: 34px !important; /* Altura fija para que se alinee bien */
+    margin-top: 0 !important;
+}
+
+/* El botón de la lupa del buscador */
+.main-header .btn-navbar {
+     background-color: #e9ecef !important; /* Un gris muy clarito para el botón */
+     color: #000000 !important;
+     border: none !important;
+     border-radius: 0 4px 4px 0 !important; /* Redondeado a la derecha */
+     height: 34px !important;
+     margin-top: 0 !important;
+     display: flex !important;
+     align-items: center !important;
+     padding: 0 10px !important;
+}
+
+.main-header .btn-navbar:hover {
+    background-color: #d0d4d8 !important;
+}
+
+/* Placeholder del buscador */
+.main-header .form-control-navbar::placeholder {
+     color: rgba(0,0,0,0.5) !important;
+}
