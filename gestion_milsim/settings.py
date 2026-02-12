@@ -1,19 +1,27 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Carga las variables desde el archivo .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cambia-esto-por-seguridad'
+# --- SEGURIDAD ---
+# Intentamos leer la clave del .env, si no existe usamos una genérica solo para desarrollo
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-desarrollo-local')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Si la variable DJANGO_DEBUG es 'True', DEBUG será True. Por defecto es False para seguridad.
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# En producción, pon aquí tu dominio real.
+ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
 
 # Seguridad para Ngrok
 CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app']
 
+# --- APLICACIONES ---
 INSTALLED_APPS = [
     'jazzmin', # SIEMPRE PRIMERO
     'django.contrib.admin',
@@ -54,6 +62,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gestion_milsim.wsgi.application'
 
+# --- BASE DE DATOS ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -68,15 +77,18 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# --- LOCALIZACIÓN (Chile) ---
 LANGUAGE_CODE = 'es-cl'
 TIME_ZONE = 'America/Santiago'
 USE_I18N = True
 USE_TZ = True
 
+# --- ARCHIVOS ESTÁTICOS ---
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- CONFIGURACIÓN VISUAL (SOLUCIÓN A PUNTOS I, VI, VII) ---
+# --- CONFIGURACIÓN JAZZMIN (Milsim Theme) ---
 JAZZMIN_SETTINGS = {
     "site_title": "MANDO CENTRAL",
     "site_header": "75th RANGER RGT",
@@ -86,11 +98,8 @@ JAZZMIN_SETTINGS = {
     "search_model": "orbat.Miembro",
     "user_avatar": None,
     
-    # --- ESTO SOLUCIONA EL PROBLEMA DE LAS PESTAÑAS VACÍAS ---
-    # "single" pone todo en una sola página vertical (scrolleas y ves todo).
     "changeform_format": "single", 
     
-    # Menú Lateral
     "show_sidebar": True,
     "navigation_expanded": True,
     "hide_models": ["orbat.Fase"],
@@ -116,8 +125,6 @@ JAZZMIN_SETTINGS = {
     },
 
     "custom_css": "custom_admin.css",
-    "custom_js": None,
-
     "dashboard_widgets": [
         {
             "view": "admin:orbat_miembro_changelist",
@@ -129,27 +136,14 @@ JAZZMIN_SETTINGS = {
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "navbar_small_text": False,
-    "footer_small_text": False,
-    "body_small_text": False,
-    "brand_small_text": False,
+    "theme": "darkly",
+    "dark_mode_theme": "darkly",
     "brand_colour": "navbar-dark",
     "accent": "accent-primary",
     "navbar": "navbar-dark",
-    "no_navbar_border": False,
-    "navbar_fixed": False,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
     "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
     "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": True,
-    "sidebar_nav_flat_style": False,
-    "theme": "darkly", # TEMA OSCURO
-    "dark_mode_theme": "darkly",
     "button_classes": {
         "primary": "btn-primary",
         "secondary": "btn-secondary",
