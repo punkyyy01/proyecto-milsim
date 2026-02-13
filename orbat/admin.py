@@ -11,7 +11,7 @@ from .models import Regimiento, Compania, Peloton, Escuadra, Miembro, Curso
 
 User = get_user_model()
 
-# --- 1. INLINES (Tablas dentro de otras páginas) ---
+# Inlines
 
 class MiembroInline(admin.TabularInline):
     model = Miembro
@@ -37,11 +37,11 @@ class PelotonInline(admin.TabularInline):
     verbose_name = "Pelotón"
     verbose_name_plural = "Pelotones de la compañía"
 
-# --- 2. PANELES PRINCIPALES (Configuración de cada sección) ---
+# Paneles principales
 
 @admin.register(Regimiento)
 class RegimientoAdmin(admin.ModelAdmin):
-    # AQUÍ SE AÑADE: Permite agregar miembros de Plana Mayor al Regimiento
+    # Miembros asignados directamente al regimiento
     inlines = [MiembroInline]
     list_display = ('nombre', 'comandante', 'total_efectivos')
     search_fields = ('nombre', 'comandante')
@@ -52,7 +52,7 @@ class RegimientoAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # Anotaciones para mostrar totales sin consultas adicionales por fila
+        # Totales para mostrar en listado sin consultas por fila
         qs = qs.annotate(
             efectivos_hq=Count('miembro', distinct=True),
             efectivos_sub=Count('companias__pelotones__escuadras__miembro', distinct=True),
@@ -60,7 +60,7 @@ class RegimientoAdmin(admin.ModelAdmin):
         return qs
 
     def total_efectivos(self, obj):
-        # Sumar miembros asignados directamente al regimiento + en la cadena
+        # Miembros de HQ + miembros en la cadena subordinada
         try:
             return (getattr(obj, 'efectivos_hq', 0) or 0) + (getattr(obj, 'efectivos_sub', 0) or 0)
         except Exception:
@@ -69,7 +69,7 @@ class RegimientoAdmin(admin.ModelAdmin):
 
 @admin.register(Compania)
 class CompaniaAdmin(admin.ModelAdmin):
-    # AQUÍ SE AÑADE: Ves los Pelotones Y puedes agregar miembros de HQ de Compañía
+    # Pelotones y miembros de HQ de compañía
     inlines = [PelotonInline, MiembroInline]
     list_display = ('nombre', 'regimiento', 'logo_preview')
     list_filter = ('regimiento',)
@@ -86,7 +86,7 @@ class CompaniaAdmin(admin.ModelAdmin):
 
 @admin.register(Peloton)
 class PelotonAdmin(admin.ModelAdmin):
-    # AQUÍ SE AÑADE: Ves las Escuadras Y puedes agregar miembros al Pelotón
+    # Escuadras y miembros de HQ de pelotón
     inlines = [EscuadraInline, MiembroInline]
     list_display = ('nombre', 'compania', 'num_escuadras')
     list_filter = ('compania',)
@@ -101,7 +101,7 @@ class PelotonAdmin(admin.ModelAdmin):
 
 @admin.register(Escuadra)
 class EscuadraAdmin(admin.ModelAdmin):
-    # Dentro de Escuadra -> Ves Miembros
+    # Miembros de la escuadra
     inlines = [MiembroInline]
     list_display = ('nombre', 'peloton', 'indicativo_radio', 'get_efectivos')
     list_filter = ('peloton',)
@@ -208,7 +208,7 @@ class CursoAdmin(admin.ModelAdmin):
     list_display = ('sigla', 'nombre')
     search_fields = ('sigla', 'nombre')
 
-# --- Integración con User admin para gestionar el perfil Miembro directamente ---
+# Vincula el perfil Miembro en el admin de User
 class MiembroUserInline(admin.StackedInline):
     model = Miembro
     can_delete = False
@@ -253,7 +253,7 @@ class GroupAdmin(DefaultGroupAdmin):
         return False
 
 
-# Re-registrar el admin de User para incluir el inline
+# Re-registro de User y Group con permisos de solo lectura
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.unregister(Group)

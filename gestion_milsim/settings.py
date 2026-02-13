@@ -4,17 +4,16 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# Carga las variables desde el archivo .env
+# Carga variables del archivo .env
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Ruta base del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- SEGURIDAD ---
-# Intentamos leer la clave del .env, si no existe usamos una genérica solo para desarrollo
+# Seguridad
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-# Si la variable DJANGO_DEBUG es 'True', DEBUG será True. Por defecto es False para seguridad.
+# DEBUG se controla por variable de entorno
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 IS_TESTING = 'test' in sys.argv
 
@@ -28,23 +27,23 @@ def _split_env_list(value: str | None) -> list[str]:
         return []
     return [item.strip() for item in value.split(',') if item.strip()]
 
-# Hosts permitidos (en Heroku debe incluir tu app: "tu-app.herokuapp.com")
+# Hosts permitidos
 ALLOWED_HOSTS = _split_env_list(os.getenv('DJANGO_ALLOWED_HOSTS'))
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if DEBUG else []
 
-# Permite túneles ngrok en desarrollo local sin abrir producción.
+# Soporte ngrok solo en desarrollo
 if DEBUG:
     ALLOWED_HOSTS += ['.ngrok-free.app', '.ngrok.io']
 
-# Seguridad CSRF
+# Orígenes confiables para CSRF
 CSRF_TRUSTED_ORIGINS = _split_env_list(os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS'))
 if DEBUG:
     CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app'] + CSRF_TRUSTED_ORIGINS
 
-# --- APLICACIONES ---
+# Aplicaciones
 INSTALLED_APPS = [
-    'jazzmin', # SIEMPRE PRIMERO
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -85,7 +84,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gestion_milsim.wsgi.application'
 
-# --- BASE DE DATOS ---
+# Base de datos
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -110,14 +109,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# --- LOCALIZACIÓN (Chile) ---
+# Localización
 LANGUAGE_CODE = 'es-cl'
 TIME_ZONE = 'America/Santiago'
 USE_I18N = True
 USE_TZ = True
 
-# --- ARCHIVOS ESTÁTICOS ---
-# Use leading and trailing slashes so STATIC_URL is absolute
+# Archivos estáticos
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -164,9 +162,9 @@ LOGGING = {
     },
 }
 
-# --- HARDENING PRODUCCIÓN (Heroku) ---
+# Producción (Heroku)
 if not DEBUG:
-    # Heroku termina TLS antes del dyno; esto permite que Django lo detecte
+    # Django debe confiar en el encabezado de proxy HTTPS
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
     SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'True') == 'True'
@@ -175,12 +173,12 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = 'same-origin'
 
-    # HSTS (por defecto 1 hora; sube esto cuando estés seguro)
+    # HSTS
     SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '3600'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
     SECURE_HSTS_PRELOAD = os.getenv('DJANGO_SECURE_HSTS_PRELOAD', 'False') == 'True'
 
-# --- CONFIGURACIÓN JAZZMIN (Milsim Theme) ---
+# Configuración Jazzmin
 JAZZMIN_SETTINGS = {
     "site_title": "MANDO CENTRAL",
     "site_header": "75th RANGER RGT",
@@ -228,54 +226,52 @@ JAZZMIN_SETTINGS = {
 }
 
 JAZZMIN_UI_TWEAKS = {
-    # ========== TEMA BASE ==========
-    "theme": "darkly",                           # Negro profundo como base
-    "dark_mode_theme": "darkly",                 # Modo oscuro = darkly
-    
-    # ========== IDENTIDAD VISUAL ==========
-    "brand_colour": "navbar-dark",               # Navbar oscuro para el logo
-    "accent": "accent-success",                  # Verde vibrante principal
-    
-    # ========== NAVBAR (BARRA SUPERIOR) ==========
-    "navbar": "navbar-dark",                     # Negro en la barra superior
-    "navbar_fixed": False,                       # No fija la navbar
-    "no_navbar_border": True,                    # Elimina bordes innecesarios
-    "navbar_small_text": False,                  # Texto normal
-    
-    # ========== SIDEBAR (MENÚ LATERAL) ==========
-    "sidebar": "sidebar-dark-success",           # Sidebar oscuro con acentos verdes
-    "sidebar_fixed": False,                      # No fija el sidebar
-    "sidebar_disable_expand": False,             # Permite colapsar
-    "sidebar_nav_small_text": False,             # Texto normal en nav
-    "sidebar_nav_child_indent": True,            # Indentación visual en subitems
-    "sidebar_nav_compact_style": False,          # Estilo normal, no compacto
-    "sidebar_nav_legacy_style": True,            # Legacy permite más control visual
-    "sidebar_nav_flat_style": False,             # No plano, con jerarquía visual
-    
-    # ========== LAYOUT Y ESTRUCTURA ==========
-    "layout_boxed": False,                       # No boxeado, full ancho
-    "footer_fixed": False,                       # Footer flotante
-    "footer_small_text": False,                  # Texto normal en footer
-    
-    # ========== MODALES Y FORMULARIOS ==========
-    "changeform_format": "single",               # Formularios en una columna
-    "changeform_format_overrides": {},           # Sin overrides específicos
-    
-    # ========== BOTONES - CONFIGURACIÓN AGRESIVA ==========
+    # Tema
+    "theme": "darkly",
+    "dark_mode_theme": "darkly",
+
+    # Colores
+    "brand_colour": "navbar-dark",
+    "accent": "accent-success",
+
+    # Barra superior
+    "navbar": "navbar-dark",
+    "navbar_fixed": False,
+    "no_navbar_border": True,
+    "navbar_small_text": False,
+
+    # Sidebar
+    "sidebar": "sidebar-dark-success",
+    "sidebar_fixed": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_small_text": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": True,
+    "sidebar_nav_flat_style": False,
+
+    # Layout
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "footer_small_text": False,
+
+    # Formularios
+    "changeform_format": "single",
+    "changeform_format_overrides": {},
+
+    # Botones
     "button_classes": {
-        "primary": "btn-success",                # Verde vibrante para botones primarios
-        "secondary": "btn-secondary",            # Gris para acciones secundarias
-        "info": "btn-info",                      # Azul claro para info
-        "warning": "btn-warning",                # Naranja para advertencias
-        "danger": "btn-danger",                  # Rojo para peligro
-        "success": "btn-success"                 # Verde para éxito
+        "primary": "btn-success",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
     },
-    
-    # ========== TEXTURAS Y EFECTOS ==========
-    "body_small_text": False,                    # Tamaño normal
-    "brand_small_text": False,                   # Logo tamaño normal
-    
-    # ========== OPCIONES ADICIONALES PARA CONTRASTE ==========
-    "show_ui_builder": False,                    # Desactiva el builder en vivo
-    "navigation_expanded": True,                 # Menú expandido por defecto
+
+    # Ajustes generales
+    "body_small_text": False,
+    "brand_small_text": False,
+    "show_ui_builder": False,
+    "navigation_expanded": True,
 }

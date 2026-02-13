@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# --- 1. NIVEL: REGIMIENTO ---
+# Nivel 1: Regimiento
 class Regimiento(models.Model):
     nombre = models.CharField(max_length=100, default="75th Ranger Regiment")
     descripcion = models.TextField(blank=True, verbose_name="Misión / Historia")
@@ -19,14 +19,14 @@ class Regimiento(models.Model):
         return self.nombre
     
     def total_efectivos(self):
-        # Cuenta todos los miembros activos en toda la cadena de mando
+        # Cuenta miembros activos del regimiento y su estructura subordinada
         return Miembro.objects.filter(
             models.Q(escuadra__peloton__compania__regimiento=self) | 
             models.Q(regimiento=self),
             activo=True
         ).distinct().count()
 
-# --- 2. NIVEL: COMPAÑÍA ---
+# Nivel 2: Compañía
 class Compania(models.Model):
     nombre = models.CharField(max_length=100, help_text="Ej: Alpha Company")
     regimiento = models.ForeignKey(
@@ -47,7 +47,7 @@ class Compania(models.Model):
     def __str__(self):
         return f"Cía. {self.nombre}"
 
-# --- 3. NIVEL: PELOTÓN ---
+# Nivel 3: Pelotón
 class Peloton(models.Model):
     nombre = models.CharField(max_length=100, help_text="Ej: 1er Pelotón")
     compania = models.ForeignKey(
@@ -63,7 +63,7 @@ class Peloton(models.Model):
     def __str__(self):
         return f"{self.nombre} [{self.compania.nombre}]"
 
-# --- 4. NIVEL: ESCUADRA ---
+# Nivel 4: Escuadra
 class Escuadra(models.Model):
     nombre = models.CharField(max_length=100, help_text="Ej: Escuadra 1-1")
     peloton = models.ForeignKey(
@@ -84,7 +84,7 @@ class Escuadra(models.Model):
     def __str__(self):
         return f"{self.peloton.compania.nombre} | {self.nombre}"
 
-# --- 5. ACADEMIA ---
+# Catálogo académico
 class Rango(models.TextChoices):
     # Oficiales
     COL = 'COL', 'Coronel (COL)'
@@ -122,9 +122,9 @@ class Curso(models.Model):
     def __str__(self):
         return f"[{self.sigla}] {self.nombre}"
 
-# --- 6. PERSONAL ---
+# Personal
 class Miembro(models.Model):
-    # Identidad y Sistema
+    # Identidad y sistema
     usuario = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     nombre_milsim = models.CharField(max_length=100, verbose_name="Nick")
     rango = models.CharField(
@@ -134,14 +134,13 @@ class Miembro(models.Model):
     )
     rol = models.CharField(max_length=100, default="Fusilero")
     
-    # ASIGNACIÓN DE NIVEL (HQ o Escuadra)
-    # Estos campos son los que faltan en tu base de datos actualmente
+    # Asignación en la estructura (HQ o escuadra)
     regimiento = models.ForeignKey(Regimiento, on_delete=models.SET_NULL, null=True, blank=True)
     compania = models.ForeignKey(Compania, on_delete=models.SET_NULL, null=True, blank=True)
     peloton = models.ForeignKey(Peloton, on_delete=models.SET_NULL, null=True, blank=True)
     escuadra = models.ForeignKey(Escuadra, on_delete=models.SET_NULL, null=True, blank=True)
     
-    # Estado y Datos Extra
+    # Estado y datos extra
     activo = models.BooleanField(default=True)
     fecha_ingreso = models.DateField(auto_now_add=True)
     discord_id = models.CharField(max_length=50, blank=True)
