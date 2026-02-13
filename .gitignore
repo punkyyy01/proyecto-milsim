@@ -12,3 +12,6 @@ __pycache__/
 Thumbs.db
 
 db.sqlite3
+
+# Django collectstatic output (generated)
+staticfiles/

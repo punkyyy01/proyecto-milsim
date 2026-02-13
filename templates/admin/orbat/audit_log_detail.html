@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Inicio</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'audit_log_list' %}">Auditoría</a></li>
+    <li class="breadcrumb-item active">Evento #{{ entry.id }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="m-0">Detalle de evento #{{ entry.id }}</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Fecha y hora</dt>
+            <dd class="col-sm-9">{{ entry.action_time|date:"d/m/Y H:i:s" }}</dd>
+
+            <dt class="col-sm-3">Usuario</dt>
+            <dd class="col-sm-9">{{ entry.user.username|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Acción</dt>
+            <dd class="col-sm-9">{% if entry.action_flag == 1 %}Añadido{% elif entry.action_flag == 2 %}Modificado{% else %}Eliminado{% endif %}</dd>
+
+            <dt class="col-sm-3">Modelo</dt>
+            <dd class="col-sm-9">{{ entry.content_type.app_label }}.{{ entry.content_type.model|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Objeto</dt>
+            <dd class="col-sm-9">{{ entry.object_repr }}</dd>
+
+            <dt class="col-sm-3">ID de objeto</dt>
+            <dd class="col-sm-9">{{ entry.object_id|default:"-" }}</dd>
+
+            <dt class="col-sm-3">Mensaje registrado</dt>
+            <dd class="col-sm-9">{{ pretty_message }}</dd>
+        </dl>
+
+        <a href="{% url 'audit_log_list' %}" class="btn btn-success">Volver a auditoría</a>
+    </div>
+</div>
+{% endblock %}

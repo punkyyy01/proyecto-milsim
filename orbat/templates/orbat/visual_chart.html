@@ -8,21 +8,22 @@
     
     <style>
         :root {
-            /* --- COLORES --- */
-            --col-regiment: #ff3333; 
-            --col-company: #00a8ff;  
-            --col-platoon: #fbc531;  
-            --col-squad: #4cd137;    
-            --bg-dark: #1a1c1f;
-            --bg-card: #2b2b2b;
-            --line-inactive: #444; /* Color línea apagada */
-            --line-active: #fff;   /* Color línea encendida */
+            /* --- COLORES TÁCTICOS VIBRANTES (JERARQUÍA) --- */
+            --col-regiment: #ff3333;      /* ROJO - Nivel 1 */
+            --col-company: #00a3ff;       /* AZUL - Nivel 2 */
+            --col-platoon: #ffb400;       /* AMARILLO - Nivel 3 */
+            --col-squad: #35d16b;         /* VERDE - Nivel 4 */
+            --border-green: #00d689;      /* BORDE VERDE PARA TODO */
+            --bg-dark: #0a0e11;
+            --bg-card: #121820;
+            --line-inactive: #2b5b45;
+            --line-active: #67f0a3;
         }
 
         /* --- BASE --- */
         body {
             background-color: var(--bg-dark);
-            color: #e0e0e0;
+            color: #e8e8e8;
             font-family: 'Rajdhani', sans-serif;
             margin: 0; overflow: hidden; 
             width: 100vw; height: 100vh;
@@ -56,13 +57,13 @@
         #viewport { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
         #canvas { transform-origin: center; transition: transform 0.1s ease-out; padding: 1000px; }
         .tf-header { 
-            font-size: 32px; color: var(--col-squad); text-transform: uppercase; 
+            font-size: 48px; color: #ff7a1a; text-transform: uppercase; 
             letter-spacing: 4px; margin-bottom: 60px; text-align: center;
-            text-shadow: 0 0 15px rgba(63, 211, 107, 0.5);
+            font-weight: 700;
         }
 
         /* --- ARBOL Y CONECTORES (Layout Base) --- */
-        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
+        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; border: none; border-radius: 0; padding: 15px; margin: 5px; }
         .tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.5s ease; }
 
         /* LÍNEAS BASE (GRISES) */
@@ -96,36 +97,42 @@
 
         /* --- TARJETAS --- */
         .card {
-            background: var(--bg-card); border: 1px solid #444; display: inline-block;
+            background: var(--bg-card); border: 2px solid var(--border-green); display: inline-block;
             border-radius: 3px; min-width: 160px; position: relative; z-index: 10;
             transition: all 0.3s ease; cursor: pointer;
         }
-        .card:hover { border-color: var(--col-squad); box-shadow: 0 0 20px rgba(63, 211, 107, 0.3); transform: translateY(-2px); z-index: 11; }
+        .card:hover { border-color: #00ff99; box-shadow: 0 0 20px rgba(0, 214, 137, 0.4); transform: translateY(-2px); z-index: 11; }
 
-        /* Niveles (Colores) */
-        .level-regiment { border-top: 4px solid var(--col-regiment); padding: 12px; min-width: 220px; }
+        /* Niveles (Colores Jerárquicos) */
+        .level-regiment { border: 1px solid #27323c; border-top: 4px solid var(--col-regiment); padding: 16px; min-width: 220px; }
         .level-regiment .unit-name { color: var(--col-regiment); }
-        .level-company { border-top: 4px solid var(--col-company); padding: 10px; }
+        .level-regiment:hover .unit-name { text-shadow: 0 0 10px var(--col-regiment), 0 0 5px rgba(255, 51, 51, 0.5); }
+        .level-company { border: 1px solid #27323c; border-top: 4px solid var(--col-company); padding: 14px; }
         .level-company .unit-name { color: var(--col-company); }
-        .level-platoon { border-top: 4px solid var(--col-platoon); padding: 8px; }
+        .level-company:hover .unit-name { text-shadow: 0 0 10px var(--col-company), 0 0 5px rgba(0, 128, 255, 0.5); }
+        .level-platoon { border: 1px solid #27323c; border-top: 4px solid var(--col-platoon); padding: 12px; }
         .level-platoon .unit-name { color: var(--col-platoon); }
-        .unit-name { font-weight: bold; font-size: 1.2em; display: block; text-transform: uppercase; }
-        .commander-name { font-size: 0.85em; color: #888; margin-top: 5px; display: block; }
+        .level-platoon:hover .unit-name { text-shadow: 0 0 10px var(--col-platoon), 0 0 5px rgba(0, 214, 137, 0.5); }
+        .unit-name { font-weight: bold; font-size: 1.6em; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .commander-name { font-size: 1.05em; color: #ffffff; margin-top: 8px; display: block; font-weight: 500; }
         
-        .level-squad { border-top: 4px solid var(--col-squad); background-color: var(--bg-card); padding: 0; min-width: 210px; }
-        .squad-header { background-color: #222; color: var(--col-squad); padding: 10px; font-weight: bold; border-bottom: 1px solid #444; }
-        .roster-table { width: 100%; border-collapse: collapse; background-color: #1a1c1f; }
-        .miembro-row { border-bottom: 1px solid #2a2a2a; cursor: pointer; transition: 0.2s; }
-        .miembro-row:hover { background-color: #333; }
-        .roster-table td { padding: 8px 12px; color: #ccc; text-align: left; font-size: 0.95em; }
-        .rank-col { font-weight: bold; color: var(--col-squad); width: 45px; border-right: 1px solid #2a2a2a; text-align: center; }
+        .level-squad { border: 1px solid #27323c; border-top: 4px solid var(--col-squad); background-color: var(--bg-card); padding: 0; min-width: 210px; box-shadow: 0 0 10px rgba(53, 209, 107, 0.15); }
+        .squad-header { background-color: #0f1a28; color: var(--col-squad); padding: 12px; font-weight: bold; border-bottom: 2px solid var(--col-squad); font-size: 1.15em; letter-spacing: 0.5px; }
+        .squad-header:hover { text-shadow: 0 0 8px var(--col-squad), 0 0 4px rgba(53, 209, 107, 0.5); }
+        .roster-table { width: 100%; border-collapse: collapse; background-color: #121820; border: 1px solid #27323c; }
+        .miembro-row { border-bottom: 1px solid #1f2a33; cursor: pointer; transition: 0.2s; }
+        .miembro-row:hover { background-color: #1a3d52; box-shadow: inset 0 0 10px rgba(0, 214, 137, 0.15); }
+        .roster-table td { padding: 10px 14px; color: #ffffff; text-align: left; font-size: 1.05em; border: 1px solid #1f2a33; }
+        .rank-col { font-weight: bold; color: #ffffff; width: 50px; border-right: 1px solid #1f2a33; text-align: center; }
+        .rank-col:hover { text-shadow: 0 0 8px var(--col-squad), 0 0 4px rgba(255, 170, 0, 0.5); }
 
         /* Modal */
         .modal-militar { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
-        .modal-content-militar { background-color: #1a1c1f; color: var(--col-squad); margin: 8% auto; padding: 40px; border: 1px solid var(--col-squad); width: 480px; font-family: 'Courier New', monospace; box-shadow: 0 0 50px rgba(63, 211, 107, 0.15); position: relative; }
-        .close-modal { position: absolute; top: 15px; right: 25px; font-size: 35px; cursor: pointer; color: #e05a5a; }
-        .ficha-datos p { margin: 20px 0; font-size: 1.2em; border-left: 3px solid #333; padding-left: 15px; display: flex; align-items: baseline; }
-        .ficha-datos strong { color: var(--col-squad); width: 160px; display: inline-block; }
+        .modal-content-militar { background-color: #121820; color: #ffffff; margin: 8% auto; padding: 50px; border: 2px solid var(--border-green); width: 520px; font-family: 'Courier New', monospace; box-shadow: 0 0 50px rgba(0, 214, 137, 0.25); position: relative; }
+        .close-modal { position: absolute; top: 15px; right: 25px; font-size: 35px; cursor: pointer; color: #ff3333; }
+        .close-modal:hover { text-shadow: 0 0 10px #ff3333, 0 0 5px rgba(255, 51, 51, 0.6); }
+        .ficha-datos p { margin: 20px 0; font-size: 1.3em; border-left: 3px solid var(--border-green); padding-left: 28px; display: flex; align-items: baseline; }
+        .ficha-datos strong { color: #ffffff; width: 190px; display: inline-block; }
         .watermark { position: absolute; bottom: 10px; right: 20px; font-size: 3em; opacity: 0.03; transform: rotate(-15deg); font-weight: bold; pointer-events: none; }
         
         #reset-view { position: fixed; bottom: 20px; right: 20px; z-index: 1500; font-size: 24px; color: var(--col-squad); background: rgba(0,0,0,0.5); border: 1px solid var(--col-squad); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
@@ -135,9 +142,9 @@
         
         /* 1. Estado "Filtering": Oscurecemos las TARJETAS, no los LIs */
         .tree.filtering .card {
-            opacity: 0.15;
-            filter: grayscale(100%) blur(1px);
-            transform: scale(0.95);
+            opacity: 1;
+            filter: none;
+            transform: scale(1);
         }
 
         /* 2. Tarjeta Activa: Se ilumina */

@@ -12,6 +12,9 @@ def orbat_visual(request):
     # 1. Optimización: 'prefetch_related' trae todas las tablas relacionadas
     # de un solo viaje, en lugar de hacer una consulta por cada escuadra.
     regimientos = Regimiento.objects.prefetch_related(
+        'miembro_set',
+        'companias__miembro_set',
+        'companias__pelotones__miembro_set',
         'companias__pelotones__escuadras__miembro_set'
     ).all()
     

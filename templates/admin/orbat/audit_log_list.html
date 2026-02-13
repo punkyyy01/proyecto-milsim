@@ -1,0 +1,106 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Inicio</a></li>
+    <li class="breadcrumb-item active">Auditoría</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="m-0">Auditoría de cambios</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3 d-flex flex-wrap" style="gap: 8px;">
+            <a class="btn btn-xs btn-info" href="?preset=today">Hoy</a>
+            <a class="btn btn-xs btn-info" href="?preset=7d">Últimos 7 días</a>
+            <a class="btn btn-xs btn-success" href="?q={{ query|urlencode }}&action={{ action_flag|urlencode }}&model={{ model_filter|urlencode }}&user={{ user_filter|urlencode }}&from={{ date_from|urlencode }}&to={{ date_to|urlencode }}&preset={{ preset|urlencode }}&export=csv">Exportar CSV</a>
+            <a class="btn btn-xs btn-secondary" href="{% url 'audit_log_list' %}">Limpiar filtros</a>
+        </div>
+
+        <form method="get" class="mb-3">
+            <input type="hidden" name="preset" value="{{ preset }}">
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar objeto, modelo o texto">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <select name="action" class="form-control">
+                        <option value="">Todas las acciones</option>
+                        <option value="1" {% if action_flag == '1' %}selected{% endif %}>Añadido</option>
+                        <option value="2" {% if action_flag == '2' %}selected{% endif %}>Modificado</option>
+                        <option value="3" {% if action_flag == '3' %}selected{% endif %}>Eliminado</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <input type="text" name="model" value="{{ model_filter }}" class="form-control" placeholder="Modelo (ej: miembro)">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <input type="text" name="user" value="{{ user_filter }}" class="form-control" placeholder="Usuario">
+                </div>
+                <div class="col-md-1 mb-2">
+                    <input type="date" name="from" value="{{ date_from }}" class="form-control">
+                </div>
+                <div class="col-md-1 mb-2">
+                    <input type="date" name="to" value="{{ date_to }}" class="form-control">
+                </div>
+                <div class="col-md-1 mb-2">
+                    <button class="btn btn-success btn-block" type="submit">Filtrar</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha y hora</th>
+                        <th>Usuario</th>
+                        <th>Acción</th>
+                        <th>Modelo</th>
+                        <th>Objeto</th>
+                        <th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in page_obj %}
+                    <tr>
+                        <td>{{ entry.action_time|date:"d/m/Y H:i:s" }}</td>
+                        <td>{{ entry.user.username|default:"-" }}</td>
+                        <td>
+                            {% if entry.action_flag == 1 %}Añadido{% elif entry.action_flag == 2 %}Modificado{% else %}Eliminado{% endif %}
+                        </td>
+                        <td>{{ entry.content_type.model|default:"-" }}</td>
+                        <td>{{ entry.object_repr }}</td>
+                        <td>
+                            <a href="{% url 'audit_log_detail' entry.id %}" class="btn btn-xs btn-info">Ver evento</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No hay eventos para los filtros seleccionados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}&action={{ action_flag|urlencode }}&model={{ model_filter|urlencode }}&user={{ user_filter|urlencode }}&from={{ date_from|urlencode }}&to={{ date_to|urlencode }}&preset={{ preset|urlencode }}">Anterior</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}&action={{ action_flag|urlencode }}&model={{ model_filter|urlencode }}&user={{ user_filter|urlencode }}&from={{ date_from|urlencode }}&to={{ date_to|urlencode }}&preset={{ preset|urlencode }}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

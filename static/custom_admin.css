@@ -6,27 +6,27 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap');
 
 :root {
-    --bg-main: #2f343a;
-    --bg-panel: #3a4047;
-    --border-tech: #4a525c;
-    --action-green: #3fd36b; 
-    --action-blue: #3fa9f5;  
-    --action-red: #e05a5a;   
-    --action-yellow: #f2c94c; 
-    --text-muted: #b0c4de;   
-    --tech-glow: 0 0 10px rgba(63, 211, 107, 0.15);
+    --bg-main: #0a0e11;
+    --bg-panel: #121820;
+    --border-tech: #1a2430;
+    --action-green: #00d689;
+    --action-blue: #00c4ff;
+    --action-red: #ff4757;
+    --action-yellow: #ffa502;
+    --text-muted: #7cae9e;
+    --tech-glow: 0 0 10px rgba(0, 214, 137, 0.3);
 }
 
 /* 2. ESTRUCTURA GENERAL */
 body {
     background-color: var(--bg-main) !important;
     font-family: 'Roboto', sans-serif;
-    color: #e0e0e0;
+    color: #e8e8e8;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #1a1c1f; }
-::-webkit-scrollbar-thumb { background: #4a525c; border-radius: 2px; }
+::-webkit-scrollbar-track { background: #1a2428; }
+::-webkit-scrollbar-thumb { background: #3d4d52; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--action-blue); }
 
 h1, h2, h3, .site-header, .brand-text {
@@ -37,9 +37,51 @@ h1, h2, h3, .site-header, .brand-text {
 
 /* 3. PANELES */
 .card, .info-box, .login-box-body, .modal-content {
-    background: linear-gradient(180deg, #3a4047 0%, #2f343a 100%) !important;
-    border: 1px solid #1f2429 !important;
-    box-shadow: 0 0 0 1px var(--border-tech) !important;
+    background: linear-gradient(180deg, #1a2835 0%, #121820 100%) !important;
+    border: 2px solid var(--action-green) !important;
+    box-shadow: 0 0 15px rgba(0, 214, 137, 0.15) !important;
+}
+
+/* Accent colors */
+.accent-teal,
+.accent-success {
+    accent-color: var(--action-green) !important;
+}
+
+.table thead th.accent-teal,
+.table thead th.accent-success {
+    border-bottom-color: var(--action-green) !important;
+}
+
+/* Sidebar Dark Success (Resaltes verdes) */
+.sidebar-dark-success .nav-sidebar .nav-item > .nav-link.active {
+    background-color: #2d4652 !important;
+    border-left-color: var(--action-green) !important;
+}
+
+.sidebar-dark-success .nav-sidebar .nav-item > .nav-link.active::before {
+    background-color: var(--action-green) !important;
+}
+
+/* Colores de éxito (success) globales */
+.btn-success {
+    background-color: var(--action-green) !important;
+    border-color: var(--action-green) !important;
+}
+
+.btn-success:hover {
+    background-color: #6baeb0 !important;
+    border-color: #6baeb0 !important;
+    box-shadow: 0 0 15px var(--action-green) !important;
+}
+
+/* Links y elementos activos */
+.active > a, 
+.nav-link.active,
+.list-group-item.active {
+    background-color: #2d4652 !important;
+    border-color: var(--action-green) !important;
+    color: var(--action-green) !important;
 }
 
 /* 4. BOTONES */
@@ -50,48 +92,76 @@ h1, h2, h3, .site-header, .brand-text {
     text-transform: uppercase;
 }
 
-.btn-primary, .btn-success, .btn-info {
+.btn-primary, .btn-success, .btn-info, .btn-teal {
     background-color: var(--action-green) !important;
-    color: #111 !important; 
+    color: #000000 !important; 
     border: none !important;
+    box-shadow: 0 0 10px rgba(0, 214, 137, 0.2) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
 }
 
-.btn-primary:hover {
-    background-color: #32c25c !important;
-    box-shadow: 0 0 15px var(--action-green);
+.btn-primary:hover, .btn-teal:hover, .btn-success:hover {
+    background-color: var(--action-green) !important;
+    box-shadow: 0 0 10px rgba(0, 214, 137, 0.2) !important;
+    transform: none !important;
 }
 
 /* 5. LINKS E INTERACCIONES (Sin subrayado global) */
-a, a:hover, a:focus, a:active, a:visited {
+/* No aplicar a enlaces que funcionan como botones (.btn) */
+a:not(.btn), a:not(.btn):hover, a:not(.btn):focus, a:not(.btn):active, a:not(.btn):visited {
     text-decoration: none !important;
-    color: #ffffff !important;
+    color: var(--action-blue) !important;
     transition: all 0.2s ease;
     outline: none !important;
 }
 
-a:hover {
-    color: var(--action-blue) !important; 
-    text-shadow: 0 0 8px var(--action-blue); 
-    cursor: crosshair; 
+a:not(.btn):hover {
+    color: var(--action-green) !important;
+    text-shadow: 0 0 8px var(--action-green);
+    cursor: crosshair;
 }
 
 /* 6. SIDEBAR */
-.sidebar-dark-primary { background-color: #252a2e !important; }
+.sidebar-dark-primary { background-color: #1a2428 !important; }
+.sidebar-dark-teal { background-color: #1a2428 !important; }
+.sidebar-dark-success { background-color: #1a2428 !important; }
 .nav-sidebar .nav-item > .nav-link { font-family: 'JetBrains Mono', monospace !important; }
 .nav-sidebar .nav-item > .nav-link.active {
-    background-color: #375a7f !important; 
+    background-color: #2d4652 !important; 
     border-left: 3px solid var(--action-green) !important;
+}
+
+/* Iconos centrados en sidebar colapsado */
+.sidebar-collapse .nav-sidebar .nav-item > .nav-link {
+    text-align: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.sidebar-collapse .nav-sidebar .nav-item > .nav-link > .nav-icon {
+    margin-right: 0 !important;
+    margin-left: -3px !important;
+}
+
+.sidebar-collapse .nav-sidebar .nav-item > .nav-link > p {
+    display: none !important;
 }
 
 /* 7. INPUTS GENERALES */
 input, select, textarea {
-    background-color: #252a2e !important;
-    border: 1px solid var(--border-tech) !important;
-    color: #fff !important;
+    background-color: #0f1419 !important;
+    border: 2px solid var(--action-green) !important;
+    color: #e8e8e8 !important;
+    box-shadow: inset 0 0 10px rgba(0, 214, 137, 0.1) !important;
 }
 
 /* 8. NAVBAR */
-.main-header.navbar { background-color: #1a1c1f !important; }
+.main-header.navbar { 
+    background-color: #0a0e11 !important;
+    border-bottom: 2px solid var(--action-green) !important;
+    box-shadow: 0 0 15px rgba(0, 214, 137, 0.15) !important;
+}
 
 /* =========================================
    9. SELECTORES (Cursos y Múltiples)
@@ -127,9 +197,9 @@ input, select, textarea {
 /* Encabezados de los cuadros */
 .selector-available h2, 
 .selector-chosen h2 {
-    background: #222 !important;
+    background: #1c2a30 !important;
     color: var(--action-green) !important;
-    border: 1px solid #444 !important;
+    border: 1px solid #2d3d45 !important;
     font-family: 'Rajdhani', sans-serif !important;
     text-transform: uppercase !important;
     padding: 8px !important;
@@ -140,8 +210,8 @@ input, select, textarea {
 
 /* Área del buscador */
 .selector .selector-filter {
-    background: #2b2b2b !important;
-    border: 1px solid #444 !important;
+    background: #1c2a30 !important;
+    border: 1px solid #2d3d45 !important;
     border-top: none !important;
     border-bottom: none !important;
     padding: 5px !important;
@@ -149,8 +219,8 @@ input, select, textarea {
 
 /* Input del buscador */
 .selector .selector-filter input {
-    background: #1a1c1f !important;
-    color: white !important;
+    background: #122028 !important;
+    color: #dddddd !important;
     border: 1px solid var(--action-green) !important;
     margin: 0 !important;
     width: 95% !important;
@@ -158,9 +228,9 @@ input, select, textarea {
 
 /* EL SELECT REAL (Lista de nombres) */
 .selector select {
-    background-color: #1a1c1f !important;
-    color: #ccc !important;
-    border: 1px solid #444 !important;
+    background-color: #122028 !important;
+    color: #dddddd !important;
+    border: 1px solid #2d3d45 !important;
     height: 250px !important; /* Más alto para ver más cursos */
     width: 100% !important;
     font-family: 'JetBrains Mono', monospace !important;
@@ -170,11 +240,11 @@ input, select, textarea {
 /* Opciones dentro del select */
 .selector select option {
     padding: 4px 8px;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #1c2a30;
 }
 
 .selector select option:hover {
-    background-color: #333 !important;
+    background-color: #2d3d45 !important;
     cursor: pointer;
 }
 
@@ -186,8 +256,8 @@ input, select, textarea {
     text-align: center !important;
     color: var(--action-green) !important;
     font-weight: bold !important;
-    background: #2b2b2b !important;
-    border: 1px solid #444 !important;
+    background: #1c2a30 !important;
+    border: 1px solid #2d3d45 !important;
     border-top: none !important;
     padding: 5px !important;
     margin: 0 !important;
@@ -197,7 +267,88 @@ input, select, textarea {
 .selector-chooseall:hover, 
 .selector-clearall:hover {
     background: var(--action-green) !important;
-    color: #000 !important;
+    color: #000000 !important;
+}
+
+/* =========================================
+   13. BOTONES (Legibilidad + sin cambio al click)
+   ========================================= */
+
+/* Texto negro en TODOS los botones (incluye estados hover/focus/active) */
+.btn,
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn.active,
+button,
+button:hover,
+button:focus,
+button:active,
+input[type="button"],
+input[type="button"]:hover,
+input[type="button"]:focus,
+input[type="button"]:active,
+input[type="submit"],
+input[type="submit"]:hover,
+input[type="submit"]:focus,
+input[type="submit"]:active,
+input[type="reset"],
+input[type="reset"]:hover,
+input[type="reset"]:focus,
+input[type="reset"]:active,
+.button,
+.button:hover,
+.button:focus,
+.button:active,
+a.button,
+a.button:hover,
+a.button:focus,
+a.button:active,
+.selector-chooseall,
+.selector-chooseall:hover,
+.selector-chooseall:focus,
+.selector-chooseall:active,
+.selector-clearall,
+.selector-clearall:hover,
+.selector-clearall:focus,
+.selector-clearall:active {
+    color: #000000 !important;
+}
+
+/* Evitar "efecto presionado"/cambio al hacer click */
+.btn:active,
+.btn.active,
+button:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+input[type="reset"]:active,
+.button:active,
+a.button:active {
+    transform: none !important;
+    filter: none !important;
+}
+
+/* Mantener estables los botones principales (sin cambio por hover/focus/active) */
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active,
+.btn-teal:hover,
+.btn-teal:focus,
+.btn-teal:active,
+.btn-teal.active {
+    background-color: var(--action-green) !important;
+    border-color: var(--action-green) !important;
+    box-shadow: 0 0 10px rgba(0, 214, 137, 0.2) !important;
+    transform: none !important;
 }
 
 /* =========================================
@@ -211,4 +362,170 @@ input, select, textarea {
 
 .table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(255,255,255,0.03) !important;
+}
+
+/* =========================================
+   11. COLORES SUCCESS (Bootstrap Override)
+   ========================================= */
+/* Elementos success en todo Bootstrap/AdminLTE */
+.badge-success {
+    background-color: var(--action-green) !important;
+}
+
+.alert-success {
+    background-color: rgba(90, 155, 125, 0.2) !important;
+    border-color: var(--action-green) !important;
+    color: var(--action-green) !important;
+}
+
+.list-group-item-success {
+    background-color: rgba(90, 155, 125, 0.1) !important;
+    border-color: var(--action-green) !important;
+    color: var(--action-green) !important;
+}
+
+.bg-success {
+    background-color: var(--action-green) !important;
+}
+
+.text-success {
+    color: var(--action-green) !important;
+}
+
+/* =========================================
+   12. BUSCADOR CENTRADO Y REDONDO
+   ========================================= */
+/* Django admin toolbar */
+#toolbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    min-height: 64px !important;
+}
+
+#toolbar form,
+#changelist-search {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#toolbar .input-group,
+#changelist-search .input-group {
+    /* IMPORTANT: don't stretch full width, keep the whole control group centered */
+    width: auto !important;
+    max-width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin: 0 auto !important;
+    flex-wrap: wrap !important;
+}
+
+#toolbar input[type="search"],
+#toolbar input[type="text"],
+#toolbar select,
+#toolbar .btn,
+#changelist-search input[type="search"],
+#changelist-search input[type="text"],
+#changelist-search select,
+#changelist-search .btn {
+    border-radius: 12px !important;
+    height: 42px !important;
+}
+
+#toolbar input,
+#toolbar select,
+#changelist-search input,
+#changelist-search select {
+    flex: 0 1 auto !important;
+}
+
+/* Size controls so the group can actually center */
+#toolbar select,
+#changelist-search select {
+    min-width: 160px !important;
+    width: 180px !important;
+}
+
+#toolbar input[type="search"],
+#toolbar input[type="text"],
+#changelist-search input[type="search"],
+#changelist-search input[type="text"] {
+    min-width: 240px !important;
+    width: 360px !important;
+}
+
+#toolbar .btn,
+#changelist-search .btn {
+    flex: 0 0 auto !important;
+    padding: 0 18px !important;
+}
+
+/* Jazzmin/AdminLTE card header toolbars */
+.card-header .card-tools,
+.card-header form {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+}
+
+.card-header .input-group {
+    width: auto !important;
+    max-width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+}
+
+.card-header .input-group > input,
+.card-header .input-group > select,
+.card-header .input-group > .btn {
+    border-radius: 12px !important;
+    height: 42px !important;
+}
+
+.card-header .input-group > select {
+    min-width: 160px !important;
+    width: 180px !important;
+    flex: 0 1 auto !important;
+}
+
+.card-header .input-group > input[type="search"],
+.card-header .input-group > input[type="text"] {
+    min-width: 240px !important;
+    width: 360px !important;
+    flex: 0 1 auto !important;
+}
+
+/* =========================================
+   14. BOTONES DASHBOARD ADMIN (Rebuild)
+   ========================================= */
+body.dashboard .card .card-body .btn-group > a.btn,
+body.dashboard .card .card-body .btn-group > a.btn:link,
+body.dashboard .card .card-body .btn-group > a.btn:visited,
+body.dashboard .card .card-body .btn-group > a.btn:hover,
+body.dashboard .card .card-body .btn-group > a.btn:focus,
+body.dashboard .card .card-body .btn-group > a.btn:active {
+    background-color: var(--action-green) !important;
+    border-color: var(--action-green) !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    text-shadow: none !important;
+    box-shadow: 0 0 10px rgba(0, 214, 137, 0.2) !important;
+    opacity: 1 !important;
+}
+
+body.dashboard .card .card-body .btn-group > a.btn:focus,
+body.dashboard .card .card-body .btn-group > a.btn:active {
+    outline: none !important;
+    transform: none !important;
+    filter: none !important;
 }

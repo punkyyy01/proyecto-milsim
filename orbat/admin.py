@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
+from django.contrib.auth.admin import GroupAdmin as DefaultGroupAdmin
 from django.utils.html import format_html
 from django.http import HttpResponse
 import csv
@@ -14,11 +16,10 @@ User = get_user_model()
 class MiembroInline(admin.TabularInline):
     model = Miembro
     fields = ('rango', 'nombre_milsim', 'rol', 'activo')
-    extra = 0
+    extra = 1
     show_change_link = True
     verbose_name = "Operador"
     verbose_name_plural = "Miembros"
-    classes = ('collapse',)
 
 class EscuadraInline(admin.TabularInline):
     model = Escuadra
@@ -194,8 +195,7 @@ class MiembroAdmin(admin.ModelAdmin):
 
     def usuario_link(self, obj):
         if obj.usuario:
-            url = f"/admin/auth/user/{obj.usuario.id}/change/"
-            return format_html('<a href="{}">{}</a>', url, obj.usuario.username)
+            return obj.usuario.username
         return '-'
     usuario_link.short_description = 'Usuario'
 
@@ -220,7 +220,41 @@ class MiembroUserInline(admin.StackedInline):
 class UserAdmin(DefaultUserAdmin):
     inlines = (MiembroUserInline,)
 
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_staff
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class GroupAdmin(DefaultGroupAdmin):
+    def has_module_permission(self, request):
+        return request.user.is_staff
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_staff
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 # Re-registrar el admin de User para incluir el inline
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)

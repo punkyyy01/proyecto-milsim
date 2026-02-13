@@ -1,6 +1,8 @@
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Carga las variables desde el archivo .env
 load_dotenv()
@@ -10,16 +12,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- SEGURIDAD ---
 # Intentamos leer la clave del .env, si no existe usamos una genérica solo para desarrollo
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-desarrollo-local')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # Si la variable DJANGO_DEBUG es 'True', DEBUG será True. Por defecto es False para seguridad.
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+IS_TESTING = 'test' in sys.argv
 
-# En producción, pon aquí tu dominio real.
-ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
+if not SECRET_KEY and DEBUG:
+    SECRET_KEY = 'django-insecure-desarrollo-local'
+if not SECRET_KEY and not DEBUG:
+    raise ValueError('Falta DJANGO_SECRET_KEY en producción')
 
-# Seguridad para Ngrok
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app']
+def _split_env_list(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+# Hosts permitidos (en Heroku debe incluir tu app: "tu-app.herokuapp.com")
+ALLOWED_HOSTS = _split_env_list(os.getenv('DJANGO_ALLOWED_HOSTS'))
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if DEBUG else []
+
+# Permite túneles ngrok en desarrollo local sin abrir producción.
+if DEBUG:
+    ALLOWED_HOSTS += ['.ngrok-free.app', '.ngrok.io']
+
+# Seguridad CSRF
+CSRF_TRUSTED_ORIGINS = _split_env_list(os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS'))
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app'] + CSRF_TRUSTED_ORIGINS
 
 # --- APLICACIONES ---
 INSTALLED_APPS = [
@@ -35,11 +56,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'orbat.middleware.BlockAdminCredentialChangesMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -63,12 +86,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gestion_milsim.wsgi.application'
 
 # --- BASE DE DATOS ---
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=int(os.getenv('DJANGO_CONN_MAX_AGE', '600')),
+            ssl_require=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -87,7 +120,65 @@ USE_TZ = True
 # Use leading and trailing slashes so STATIC_URL is absolute
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': (
+            'django.contrib.staticfiles.storage.StaticFilesStorage'
+            if (DEBUG or IS_TESTING)
+            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+        ),
+    },
+}
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO')
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': LOG_LEVEL,
+            'propagate': False,
+        },
+    },
+}
+
+# --- HARDENING PRODUCCIÓN (Heroku) ---
+if not DEBUG:
+    # Heroku termina TLS antes del dyno; esto permite que Django lo detecte
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'True') == 'True'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+
+    # HSTS (por defecto 1 hora; sube esto cuando estés seguro)
+    SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
+    SECURE_HSTS_PRELOAD = os.getenv('DJANGO_SECURE_HSTS_PRELOAD', 'False') == 'True'
 
 # --- CONFIGURACIÓN JAZZMIN (Milsim Theme) ---
 JAZZMIN_SETTINGS = {
@@ -137,20 +228,54 @@ JAZZMIN_SETTINGS = {
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "darkly",
-    "dark_mode_theme": "darkly",
-    "brand_colour": "navbar-dark",
-    "accent": "accent-primary",
-    "navbar": "navbar-dark",
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_child_indent": True,
-    "sidebar_nav_legacy_style": True,
+    # ========== TEMA BASE ==========
+    "theme": "darkly",                           # Negro profundo como base
+    "dark_mode_theme": "darkly",                 # Modo oscuro = darkly
+    
+    # ========== IDENTIDAD VISUAL ==========
+    "brand_colour": "navbar-dark",               # Navbar oscuro para el logo
+    "accent": "accent-success",                  # Verde vibrante principal
+    
+    # ========== NAVBAR (BARRA SUPERIOR) ==========
+    "navbar": "navbar-dark",                     # Negro en la barra superior
+    "navbar_fixed": False,                       # No fija la navbar
+    "no_navbar_border": True,                    # Elimina bordes innecesarios
+    "navbar_small_text": False,                  # Texto normal
+    
+    # ========== SIDEBAR (MENÚ LATERAL) ==========
+    "sidebar": "sidebar-dark-success",           # Sidebar oscuro con acentos verdes
+    "sidebar_fixed": False,                      # No fija el sidebar
+    "sidebar_disable_expand": False,             # Permite colapsar
+    "sidebar_nav_small_text": False,             # Texto normal en nav
+    "sidebar_nav_child_indent": True,            # Indentación visual en subitems
+    "sidebar_nav_compact_style": False,          # Estilo normal, no compacto
+    "sidebar_nav_legacy_style": True,            # Legacy permite más control visual
+    "sidebar_nav_flat_style": False,             # No plano, con jerarquía visual
+    
+    # ========== LAYOUT Y ESTRUCTURA ==========
+    "layout_boxed": False,                       # No boxeado, full ancho
+    "footer_fixed": False,                       # Footer flotante
+    "footer_small_text": False,                  # Texto normal en footer
+    
+    # ========== MODALES Y FORMULARIOS ==========
+    "changeform_format": "single",               # Formularios en una columna
+    "changeform_format_overrides": {},           # Sin overrides específicos
+    
+    # ========== BOTONES - CONFIGURACIÓN AGRESIVA ==========
     "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success"
-    }
+        "primary": "btn-success",                # Verde vibrante para botones primarios
+        "secondary": "btn-secondary",            # Gris para acciones secundarias
+        "info": "btn-info",                      # Azul claro para info
+        "warning": "btn-warning",                # Naranja para advertencias
+        "danger": "btn-danger",                  # Rojo para peligro
+        "success": "btn-success"                 # Verde para éxito
+    },
+    
+    # ========== TEXTURAS Y EFECTOS ==========
+    "body_small_text": False,                    # Tamaño normal
+    "brand_small_text": False,                   # Logo tamaño normal
+    
+    # ========== OPCIONES ADICIONALES PARA CONTRASTE ==========
+    "show_ui_builder": False,                    # Desactiva el builder en vivo
+    "navigation_expanded": True,                 # Menú expandido por defecto
 }

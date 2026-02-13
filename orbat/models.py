@@ -86,20 +86,28 @@ class Escuadra(models.Model):
 
 # --- 5. ACADEMIA ---
 class Rango(models.TextChoices):
+    # Oficiales
     COL = 'COL', 'Coronel (COL)'
     LTC = 'LTC', 'Teniente Coronel (LTC)'
     MAJ = 'MAJ', 'Mayor (MAJ)'
     CPT = 'CPT', 'Capitán (CPT)'
-    LT1 = 'LT1', 'Teniente Primero (1LT)'
-    LT2 = 'LT2', 'Teniente Segundo (2LT)'
+    LT1 = '1LT', 'Teniente Primero (1LT)'
+    LT2 = '2LT', 'Teniente Segundo (2LT)'
+    # Warrant Officers
     CW5 = 'CW5', 'Chief Warrant Officer 5'
     CW4 = 'CW4', 'Chief Warrant Officer 4'
+    CW3 = 'CW3', 'Chief Warrant Officer 3'
+    CW2 = 'CW2', 'Chief Warrant Officer 2'
     WO1 = 'WO1', 'Warrant Officer 1'
+    # Suboficiales
     CSM = 'CSM', 'Sargento Mayor de Comando (CSM)'
-    SG1 = 'SG1', 'Sargento Primero (1SG)'
+    SGM = 'SGM', 'Sargento Mayor (SGM)'
+    SG1 = '1SG', 'Sargento Primero (1SG)'
+    MSG = 'MSG', 'Sargento Maestro (MSG)'
     SFC = 'SFC', 'Sargento de Primera Clase (SFC)'
     SSG = 'SSG', 'Sargento de Estado Mayor (SSG)'
     SGT = 'SGT', 'Sargento (SGT)'
+    # Tropa
     CPL = 'CPL', 'Cabo (CPL)'
     SPC = 'SPC', 'Especialista (SPC)'
     PFC = 'PFC', 'Soldado de Primera (PFC)'
