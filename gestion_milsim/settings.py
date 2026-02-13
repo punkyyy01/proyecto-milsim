@@ -84,7 +84,8 @@ USE_I18N = True
 USE_TZ = True
 
 # --- ARCHIVOS ESTÁTICOS ---
-STATIC_URL = 'static/'
+# Use leading and trailing slashes so STATIC_URL is absolute
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

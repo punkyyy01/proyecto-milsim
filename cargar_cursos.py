@@ -25,7 +25,7 @@ cursos_data = [
 ]
 
 for siglas, nombre in cursos_data:
-    obj, created = Curso.objects.get_or_create(nombre=nombre, defaults={'siglas': siglas})
+    obj, created = Curso.objects.get_or_create(nombre=nombre, defaults={'sigla': siglas})
     if created:
         print(f"✔️ Creado: {nombre}")
     else:

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -176,8 +177,9 @@
             filter: drop-shadow(0 0 2px var(--line-active));
             z-index: 50;
         }
-
+        
     </style>
+    <link rel="stylesheet" href="{% static 'orbat_style.css' %}">
 </head>
 <body oncontextmenu="return false;"> 
 
@@ -186,7 +188,7 @@
         <div class="loader-bar"><div class="loader-progress"></div></div>
     </div>
 
-    <button id="reset-view" title="Resetear Vista">⌖</button>
+    <!-- Reseteo de vista eliminado (resaltado por click deshabilitado) -->
 
     <div id="viewport">
         <div id="canvas">
@@ -196,26 +198,26 @@
                 <ul>
                     {% for reg in regimientos %}
                     <li>
-                        <div class="card level-regiment" onclick="toggleFoco(this, event)">
+                        <div class="card level-regiment">
                             <span class="unit-name">{{ reg.nombre }}</span>
                             {% if reg.comandante %}<span class="commander-name">CO: {{ reg.comandante }}</span>{% endif %}
                         </div>
                         <ul>
                             {% for cia in reg.companias.all %}
                             <li>
-                                <div class="card level-company" onclick="toggleFoco(this, event)">
+                                <div class="card level-company">
                                     <span class="unit-name">{{ cia.nombre }}</span>
                                 </div>
                                 <ul>
                                     {% for plt in cia.pelotones.all %}
                                     <li>
-                                        <div class="card level-platoon" onclick="toggleFoco(this, event)">
+                                        <div class="card level-platoon">
                                             <span class="unit-name">{{ plt.nombre }}</span>
                                         </div>
                                         <ul>
                                             {% for sqd in plt.escuadras.all %}
                                             <li>
-                                                <div class="card level-squad" onclick="toggleFoco(this, event)">
+                                                <div class="card level-squad">
                                                     <div class="squad-header">{{ sqd.nombre }}</div>
                                                     <table class="roster-table">
                                                         {% for m in sqd.miembro_set.all %}
@@ -306,112 +308,7 @@
         window.addEventListener('mouseup', () => { isDragging = false; document.body.style.cursor = "grab"; });
         function updateTransform() { canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; }
         
-        document.getElementById('reset-view').onclick = function() {
-            scale = 0.8; translateX = 0; translateY = 0; updateTransform(); resetFoco();
-        };
-
-        // --- 3. LÓGICA DE FOCO (CORREGIDA Y FINAL) ---
-        function toggleFoco(elementoCard, event) {
-            event.stopPropagation();
-            if (event.target.closest('.miembro-row')) return;
-
-            const treeRoot = document.querySelector('.tree');
-            const liActual = elementoCard.closest('li');
-
-            resetFoco(); 
-            treeRoot.classList.add('filtering');
-
-            // A) ACTIVAR NODO ACTUAL Y DESCENDIENTES
-            liActual.classList.add('active-path'); 
-            liActual.classList.add('active-vertical'); 
-
-            const descendientes = liActual.querySelectorAll('li');
-            descendientes.forEach(nodo => {
-                nodo.classList.add('active-path');
-                nodo.classList.add('active-vertical');
-                nodo.classList.add('connect-left', 'connect-right'); 
-            });
-            liActual.querySelectorAll('ul').forEach(ul => ul.classList.add('active-path'));
-
-            // B) ACTIVAR ANCESTROS (CAMINAR HACIA ARRIBA)
-            let currentLi = liActual;
-            
-            while (currentLi) {
-                currentLi.classList.add('active-path');
-                currentLi.classList.add('active-vertical'); 
-
-                const parentUl = currentLi.parentElement;
-                if (!parentUl || parentUl.className.includes('tree')) break;
-
-                // Iluminar la línea vertical que baja del padre
-                parentUl.classList.add('active-path');
-
-                // CALCULAR EL PUENTE HORIZONTAL EXACTO
-                colorearPuenteHorizontal(currentLi, parentUl);
-
-                // Subir nivel
-                if (parentUl.parentElement.tagName === 'LI') {
-                    currentLi = parentUl.parentElement;
-                } else {
-                    currentLi = null;
-                }
-            }
-        }
-
-        // --- ALGORITMO CORREGIDO DE PUENTES ---
-        function colorearPuenteHorizontal(targetLi, parentUl) {
-            const siblings = Array.from(parentUl.children).filter(el => el.tagName === 'LI');
-            const total = siblings.length;
-            if (total <= 1) return; 
-
-            const targetIndex = siblings.indexOf(targetLi);
-            const centerIndex = (total - 1) / 2; // Centro matemático exacto
-
-            siblings.forEach((sibling, index) => {
-                // Importante: No limpiamos clases aquí para no borrar lo que hizo un paso anterior
-                // pero como partimos de resetFoco() está bien.
-
-                // CASO 1: Objetivo a la IZQUIERDA del Centro
-                if (targetIndex < centerIndex) {
-                    // Brazo derecho para nodos desde el objetivo hacia el centro
-                    if (index >= targetIndex && index < centerIndex) {
-                        sibling.classList.add('connect-right');
-                    }
-                    // Brazo izquierdo para nodos intermedios que reciben la conexión
-                    if (index > targetIndex && index <= centerIndex) {
-                        sibling.classList.add('connect-left');
-                    }
-                }
-
-                // CASO 2: Objetivo a la DERECHA del Centro
-                else if (targetIndex > centerIndex) {
-                    // Brazo izquierdo para nodos desde el objetivo hacia el centro
-                    if (index > centerIndex && index <= targetIndex) {
-                        sibling.classList.add('connect-left');
-                    }
-                    // Brazo derecho para nodos intermedios que reciben la conexión
-                    if (index >= centerIndex && index < targetIndex) {
-                        sibling.classList.add('connect-right');
-                    }
-                }
-            });
-        }
-
-        function resetFoco() {
-            const treeRoot = document.querySelector('.tree');
-            treeRoot.classList.remove('filtering');
-            
-            const clases = ['active-path', 'active-vertical', 'connect-left', 'connect-right'];
-            clases.forEach(cls => {
-                document.querySelectorAll('.' + cls).forEach(el => el.classList.remove(cls));
-            });
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target.id === 'viewport' || e.target.id === 'canvas') {
-                resetFoco();
-            }
-        });
+        // reset-view and focus/highlight functionality removed
 
         // --- 4. MODAL ---
         function mostrarFicha(elemento) {
