@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 # Nivel 1: Regimiento
 class Regimiento(models.Model):
@@ -126,7 +127,7 @@ class Curso(models.Model):
 class Miembro(models.Model):
     # Identidad y sistema
     usuario = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
-    nombre_milsim = models.CharField(max_length=100, verbose_name="Nick")
+    nombre_milsim = models.CharField(max_length=100, verbose_name="Nick", unique=True)
     rango = models.CharField(
         max_length=5, 
         choices=Rango.choices, 
@@ -152,6 +153,23 @@ class Miembro(models.Model):
         verbose_name = "Operador"
         verbose_name_plural = "5. Personal"
         ordering = ['-rango', 'nombre_milsim']
+
+    def clean(self):
+        super().clean()
+        # Solo se puede asignar a UN nivel jerárquico
+        niveles = [
+            ('regimiento', self.regimiento),
+            ('compania', self.compania),
+            ('peloton', self.peloton),
+            ('escuadra', self.escuadra),
+        ]
+        asignados = [nombre for nombre, valor in niveles if valor is not None]
+        if len(asignados) > 1:
+            raise ValidationError(
+                "Un miembro solo puede estar asignado a UN nivel de la estructura "
+                "(Regimiento, Compañía, Pelotón o Escuadra), no a varios a la vez. "
+                f"Actualmente asignado a: {', '.join(asignados)}."
+            )
 
     def __str__(self):
         return f"[{self.rango}] {self.nombre_milsim}"

@@ -150,10 +150,60 @@ a:not(.btn):hover {
 
 /* 7. INPUTS GENERALES */
 input, select, textarea {
-    background-color: #0f1419 !important;
+    background-color: #1b2a3a !important;
     border: 2px solid var(--action-green) !important;
     color: #e8e8e8 !important;
     box-shadow: inset 0 0 10px rgba(0, 214, 137, 0.1) !important;
+}
+
+/* Override Bootstrap/Jazzmin form controls (excluir botones) */
+.form-control:not(.btn),
+.form-control:not(.btn):focus,
+.custom-select:not(.btn),
+.custom-select:not(.btn):focus,
+select.form-control:not(.btn),
+input.form-control:not([type="submit"]):not([type="button"]),
+textarea.form-control,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple,
+.input-group .form-control:not(.btn),
+.inline-related input:not([type="submit"]):not([type="button"]),
+.inline-related select,
+.inline-related textarea,
+.tabular .form-row input:not([type="submit"]):not([type="button"]),
+.tabular .form-row select,
+.tabular .form-row textarea {
+    background-color: #1b2a3a !important;
+    color: #ffffff !important;
+    border-color: var(--action-green) !important;
+}
+
+/* Texto blanco en selects y opciones */
+select option,
+.custom-select option,
+select.form-control option {
+    background-color: #1b2a3a !important;
+    color: #ffffff !important;
+}
+
+/* Select2 rendered text */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #ffffff !important;
+}
+
+/* Select2 dropdown (si se usa) */
+.select2-container--default .select2-results__option {
+    background-color: #1b2a3a !important;
+    color: #e8e8e8 !important;
+}
+
+.select2-container--default .select2-results__option--highlighted {
+    background-color: #2d4050 !important;
+}
+
+.select2-dropdown {
+    background-color: #1b2a3a !important;
+    border-color: var(--action-green) !important;
 }
 
 /* 8. NAVBAR */
@@ -528,4 +578,248 @@ body.dashboard .card .card-body .btn-group > a.btn:active {
     outline: none !important;
     transform: none !important;
     filter: none !important;
+}
+
+/* =========================================
+   15. INLINE DELETE BUTTONS
+   ========================================= */
+
+/* Botón ELIMINAR */
+.btn-inline-delete {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px;
+    background: rgba(255, 71, 87, 0.15) !important;
+    color: var(--action-red) !important;
+    border: 1px solid var(--action-red) !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    white-space: nowrap;
+}
+
+.btn-inline-delete:hover {
+    background: var(--action-red) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(255, 71, 87, 0.4) !important;
+    transform: none !important;
+}
+
+.btn-inline-delete i {
+    font-size: 11px;
+}
+
+/* Botón DESHACER */
+.btn-inline-undo {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px;
+    background: rgba(0, 214, 137, 0.15) !important;
+    color: var(--action-green) !important;
+    border: 1px solid var(--action-green) !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    white-space: nowrap;
+}
+
+.btn-inline-undo:hover {
+    background: var(--action-green) !important;
+    color: #000000 !important;
+    box-shadow: 0 0 12px rgba(0, 214, 137, 0.4) !important;
+    transform: none !important;
+}
+
+.btn-inline-undo i {
+    font-size: 11px;
+}
+
+/* Fila marcada para eliminar */
+tr.inline-marked-delete,
+.inline-related.inline-marked-delete {
+    opacity: 0.35 !important;
+    background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 8px,
+        rgba(255, 71, 87, 0.05) 8px,
+        rgba(255, 71, 87, 0.05) 16px
+    ) !important;
+    position: relative;
+}
+
+tr.inline-marked-delete td,
+.inline-related.inline-marked-delete input,
+.inline-related.inline-marked-delete select {
+    pointer-events: none;
+}
+
+/* Permitir click solo en el botón deshacer dentro de la fila marcada */
+tr.inline-marked-delete td:last-child,
+tr.inline-marked-delete .btn-inline-undo,
+.inline-related.inline-marked-delete .btn-inline-undo {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+
+/* Cabecera de la columna ACCIONES */
+.inline-delete-header {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 12px !important;
+    color: #7cae9e !important;
+    letter-spacing: 1px;
+}
+
+/* Forzar estilo en inline-deletelink (filas dinámicas) */
+a.inline-deletelink,
+a.inline-deletelink:link,
+a.inline-deletelink:visited,
+a.inline-deletelink:hover,
+a.inline-deletelink:active {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 14px !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    background: rgba(255, 71, 87, 0.15) !important;
+    color: var(--action-red) !important;
+    border: 1px solid var(--action-red) !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    white-space: nowrap !important;
+    text-decoration: none !important;
+    float: none !important;
+}
+
+a.inline-deletelink:hover {
+    background: var(--action-red) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(255, 71, 87, 0.4) !important;
+}
+
+/* =========================================
+   16. BOTÓN "SALIR SIN GUARDAR"
+   ========================================= */
+.btn-exit-nosave,
+.btn-exit-nosave:link,
+.btn-exit-nosave:visited,
+.btn-exit-nosave:hover,
+.btn-exit-nosave:focus,
+.btn-exit-nosave:active {
+    background: rgba(255, 165, 2, 0.12) !important;
+    color: var(--action-yellow) !important;
+    border: 1px solid var(--action-yellow) !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    border-radius: 3px !important;
+    transition: all 0.2s ease !important;
+    margin-top: 4px !important;
+}
+
+.btn-exit-nosave:hover {
+    background: var(--action-yellow) !important;
+    color: #000000 !important;
+    box-shadow: 0 0 12px rgba(255, 165, 2, 0.4) !important;
+}
+
+/* =========================================
+   17. BOTÓN DELETE EN SUBMIT LINE (Unificado)
+   ========================================= */
+.btn-danger-custom,
+.btn-danger-custom:link,
+.btn-danger-custom:visited,
+.btn-danger-custom:hover,
+.btn-danger-custom:focus,
+.btn-danger-custom:active {
+    background: rgba(255, 71, 87, 0.15) !important;
+    color: var(--action-red) !important;
+    border: 1px solid var(--action-red) !important;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    border-radius: 3px !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-danger-custom:hover {
+    background: var(--action-red) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(255, 71, 87, 0.4) !important;
+}
+
+/* =========================================
+   18. SUBMIT ROW - BOTONES LEGIBLES
+   ========================================= */
+
+/* Guardar (btn-success) - verde fuerte con texto negro */
+.submit-row input[type="submit"].btn-success,
+.submit-row input[type="submit"].btn-success:hover,
+.submit-row input[type="submit"].btn-success:focus,
+.submit-row input[type="submit"].btn-success:active,
+div > .form-group > input.btn-success.form-control,
+div > .form-group > input.btn-success.form-control:hover {
+    background-color: var(--action-green) !important;
+    color: #000000 !important;
+    border: 1px solid var(--action-green) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 10px rgba(0, 214, 137, 0.3) !important;
+}
+
+/* Guardar y añadir / Guardar y continuar (btn-info) */
+.submit-row input[type="submit"].btn-info,
+.submit-row input[type="submit"].btn-info:hover,
+.submit-row input[type="submit"].btn-info:focus,
+.submit-row input[type="submit"].btn-info:active,
+div > .form-group > input.btn-info.form-control,
+div > .form-group > input.btn-info.form-control:hover {
+    background: #1b2a3a !important;
+    color: #ffffff !important;
+    border: 1px solid var(--action-green) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 8px rgba(0, 214, 137, 0.15) !important;
+}
+
+/* Botón Histórico (Jazzmin default / btn-default / btn-secondary) */
+.submit-row a.btn-default,
+.submit-row a.btn-secondary,
+.submit-row a.btn-default:hover,
+.submit-row a.btn-secondary:hover,
+.submit-row a.historylink,
+div > .form-group > a.btn-default.form-control,
+div > .form-group > a.btn-secondary.form-control,
+div > .form-group > a.btn.form-control:not(.btn-success):not(.btn-info):not(.btn-danger-custom):not(.btn-exit-nosave) {
+    background: #1b2a3a !important;
+    color: #ffffff !important;
+    border: 1px solid #3d5060 !important;
+    font-weight: 700 !important;
+}
+
+div > .form-group > a.btn.form-control:not(.btn-success):not(.btn-info):not(.btn-danger-custom):not(.btn-exit-nosave):hover {
+    border-color: var(--action-green) !important;
+    box-shadow: 0 0 8px rgba(0, 214, 137, 0.2) !important;
 }

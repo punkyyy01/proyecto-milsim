@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 from .models import Regimiento, Compania, Peloton, Escuadra, Miembro
 
 
@@ -112,6 +113,7 @@ class AuditLogTests(TestCase):
 	def setUp(self):
 		self.client = Client()
 		self.staff = User.objects.create_user(username='audit_staff', password='p', is_staff=True)
+		self.staff_2 = User.objects.create_user(username='audit_staff_2', password='p', is_staff=True)
 		self.normal = User.objects.create_user(username='normal_user', password='p', is_staff=False)
 		ct = ContentType.objects.get_for_model(Regimiento)
 		self.entry = LogEntry.objects.create(
@@ -119,6 +121,14 @@ class AuditLogTests(TestCase):
 			content_type=ct,
 			object_id='1',
 			object_repr='Regimiento Test',
+			action_flag=ADDITION,
+			change_message='[{"added": {"name": "regimiento"}}]'
+		)
+		self.entry_other_user = LogEntry.objects.create(
+			user=self.staff_2,
+			content_type=ct,
+			object_id='2',
+			object_repr='Regimiento Global',
 			action_flag=ADDITION,
 			change_message='[{"added": {"name": "regimiento"}}]'
 		)
@@ -155,3 +165,13 @@ class AuditLogTests(TestCase):
 		response = self.client.get(reverse('audit_log_list'), {'preset': 'today'})
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, 'Auditoría de cambios')
+
+	def test_dashboard_recent_actions_is_global(self):
+		self.client.login(username='audit_staff', password='p')
+		response = self.client.get(reverse('admin:index'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Regimiento Global')
+
+	def test_logentry_cannot_be_deleted(self):
+		with self.assertRaises(PermissionDenied):
+			self.entry.delete()

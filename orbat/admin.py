@@ -3,10 +3,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
 from django.contrib.auth.admin import GroupAdmin as DefaultGroupAdmin
+from django.contrib.admin.views.main import ChangeList
 from django.utils.html import format_html
 from django.http import HttpResponse
 import csv
-from django.db.models import Count
+from django.db.models import Case, Count, IntegerField, Value, When
 from .models import Regimiento, Compania, Peloton, Escuadra, Miembro, Curso
 
 User = get_user_model()
@@ -14,12 +15,18 @@ User = get_user_model()
 # Inlines
 
 class MiembroInline(admin.TabularInline):
+    """Inline de SOLO LECTURA para ver miembros asignados a la unidad.
+    No permite crear ni borrar miembros desde aquí.
+    Para gestionar miembros, usar la sección Personal."""
     model = Miembro
     fields = ('rango', 'nombre_milsim', 'rol', 'activo')
-    extra = 1
+    readonly_fields = ('rango', 'nombre_milsim', 'rol', 'activo')
+    extra = 0
+    max_num = 0  # Impide añadir nuevos desde aquí
+    can_delete = False  # No borrar miembros desde la unidad
     show_change_link = True
-    verbose_name = "Operador"
-    verbose_name_plural = "Miembros"
+    verbose_name = "Operador asignado"
+    verbose_name_plural = "Miembros asignados (gestionar desde Personal)"
 
 class EscuadraInline(admin.TabularInline):
     model = Escuadra
@@ -29,6 +36,9 @@ class EscuadraInline(admin.TabularInline):
     verbose_name = "Escuadra"
     verbose_name_plural = "Escuadras del pelotón"
 
+    class Media:
+        js = ('admin_inline_delete.js',)
+
 class PelotonInline(admin.TabularInline):
     model = Peloton
     fields = ('nombre',)
@@ -36,6 +46,9 @@ class PelotonInline(admin.TabularInline):
     show_change_link = True
     verbose_name = "Pelotón"
     verbose_name_plural = "Pelotones de la compañía"
+
+    class Media:
+        js = ('admin_inline_delete.js',)
 
 # Paneles principales
 
@@ -55,14 +68,21 @@ class RegimientoAdmin(admin.ModelAdmin):
         # Totales para mostrar en listado sin consultas por fila
         qs = qs.annotate(
             efectivos_hq=Count('miembro', distinct=True),
-            efectivos_sub=Count('companias__pelotones__escuadras__miembro', distinct=True),
+            efectivos_cia=Count('companias__miembro', distinct=True),
+            efectivos_plt=Count('companias__pelotones__miembro', distinct=True),
+            efectivos_sqd=Count('companias__pelotones__escuadras__miembro', distinct=True),
         )
         return qs
 
     def total_efectivos(self, obj):
-        # Miembros de HQ + miembros en la cadena subordinada
+        # Miembros de HQ reg + HQ compañía + HQ pelotón + escuadra
         try:
-            return (getattr(obj, 'efectivos_hq', 0) or 0) + (getattr(obj, 'efectivos_sub', 0) or 0)
+            return (
+                (getattr(obj, 'efectivos_hq', 0) or 0)
+                + (getattr(obj, 'efectivos_cia', 0) or 0)
+                + (getattr(obj, 'efectivos_plt', 0) or 0)
+                + (getattr(obj, 'efectivos_sqd', 0) or 0)
+            )
         except Exception:
             return obj.total_efectivos()
     total_efectivos.short_description = 'Efectivos'
@@ -95,8 +115,12 @@ class PelotonAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'compania__nombre')
     autocomplete_fields = ('compania',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(_num_escuadras=Count('escuadras'))
+
     def num_escuadras(self, obj):
-        return obj.escuadras.count()
+        return getattr(obj, '_num_escuadras', obj.escuadras.count())
     num_escuadras.short_description = 'Escuadras'
 
 @admin.register(Escuadra)
@@ -110,8 +134,12 @@ class EscuadraAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'peloton__nombre')
     autocomplete_fields = ('peloton',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(_efectivos=Count('miembro'))
+
     def get_efectivos(self, obj):
-        return obj.miembro_set.count()
+        return getattr(obj, '_efectivos', obj.miembro_set.count())
     get_efectivos.short_description = "Efectivos"
 
 @admin.register(Miembro)
@@ -142,11 +170,8 @@ class MiembroAdmin(admin.ModelAdmin):
     readonly_fields = ('fecha_ingreso',)
     autocomplete_fields = ('regimiento', 'compania', 'peloton', 'escuadra', 'cursos')
 
-    actions = ('marcar_activo', 'marcar_inactivo')
-
     def export_members_csv(self, request, queryset):
         """Exporta los miembros seleccionados como CSV"""
-        meta = self.model._meta
         field_names = ['rango', 'nombre_milsim', 'rol', 'usuario', 'regimiento', 'compania', 'peloton', 'escuadra', 'activo']
 
         response = HttpResponse(content_type='text/csv')
@@ -236,7 +261,37 @@ class UserAdmin(DefaultUserAdmin):
         return False
 
 
+class ERPGroupChangeList(ChangeList):
+    def get_ordering(self, request, queryset):
+        return ["erp_order", "name"]
+
+
 class GroupAdmin(DefaultGroupAdmin):
+    ERP_GROUP_ORDER = [
+        "CREADOR_ERP",
+        "ALTO_MANDO_ERP",
+        "OFICIAL_ERP",
+        "SARGENTO_ERP",
+        "CONSULTA_ERP",
+    ]
+
+    def get_queryset(self, request):
+        qs = self.model._default_manager.get_queryset()
+        order_cases = [
+            When(name=group_name, then=Value(index))
+            for index, group_name in enumerate(self.ERP_GROUP_ORDER)
+        ]
+        return qs.annotate(
+            erp_order=Case(
+                *order_cases,
+                default=Value(len(self.ERP_GROUP_ORDER)),
+                output_field=IntegerField(),
+            )
+        ).order_by("erp_order", "name")
+
+    def get_changelist(self, request, **kwargs):
+        return ERPGroupChangeList
+
     def has_module_permission(self, request):
         return request.user.is_staff
 

@@ -1,0 +1,20 @@
+flowchart TD
+    U[Usuario entra a la página ORBAT<br/>GET /orbat/] --> URL[El sistema de rutas recibe la petición]
+    URL --> V[Se envía la petición a la pantalla ORBAT]
+    V --> A{¿La persona inició sesión?}
+    A -- No --> L[Se redirige a la pantalla de acceso]
+    A -- Sí --> Q[Se carga toda la estructura militar<br/>en una consulta optimizada]
+
+    Q --> R[Regimiento]
+    R --> C[Compañías]
+    C --> P[Pelotones]
+    P --> E[Escuadras]
+    R --> MR[Personal asignado a Regimiento]
+    C --> MC[Personal asignado a Compañía]
+    P --> MP[Personal asignado a Pelotón]
+    E --> ME[Personal asignado a Escuadra]
+    ME --> CU[Cursos del personal]
+
+    Q --> CTX[Se prepara la información para la vista]
+    CTX --> T[Se renderiza la plantilla visual ORBAT]
+    T --> H[El navegador muestra la página final]

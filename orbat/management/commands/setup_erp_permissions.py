@@ -7,7 +7,7 @@ from orbat.models import Compania, Curso, Escuadra, Miembro, Peloton, Regimiento
 
 
 class Command(BaseCommand):
-    help = "Crea/actualiza grupos de permisos del ERP ORBAT y asigna CREADOR a Emi."
+    help = "Crea/actualiza grupos de permisos del ERP ORBAT, asigna CREADOR a Emi y sincroniza acceso staff para miembros de grupos ERP."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -71,6 +71,18 @@ class Command(BaseCommand):
         User = get_user_model()
         groups_by_name = {group.name: group for group in Group.objects.filter(name__in=group_matrix.keys())}
 
+        def sync_staff_for_group_members():
+            updated = (
+                User.objects.filter(groups__name__in=groups_by_name.keys(), is_superuser=False, is_staff=False)
+                .distinct()
+                .update(is_staff=True)
+            )
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Usuarios no-superusuario actualizados con acceso staff por pertenecer a grupos ERP: {updated}"
+                )
+            )
+
         def assign_user_to_group(username, group_name):
             user = User.objects.filter(username__iexact=username).first()
             if not user:
@@ -125,4 +137,6 @@ class Command(BaseCommand):
 
             for username in usernames:
                 assign_user_to_group(username, group_name)
+
+        sync_staff_for_group_members()
 

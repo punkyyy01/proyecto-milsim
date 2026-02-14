@@ -16,6 +16,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # DEBUG se controla por variable de entorno
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 IS_TESTING = 'test' in sys.argv
+SECURE_MODE = (os.getenv('DJANGO_SECURE_MODE', 'False') == 'True' or not DEBUG) and not IS_TESTING
 
 if not SECRET_KEY and DEBUG:
     SECRET_KEY = 'django-insecure-desarrollo-local'
@@ -85,13 +86,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gestion_milsim.wsgi.application'
 
 # Base de datos
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = (os.getenv('DATABASE_URL') or '').strip() or None
 if DATABASE_URL:
+    _ssl_require = os.getenv('DJANGO_DB_SSL_REQUIRE', 'False') == 'True'
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=int(os.getenv('DJANGO_CONN_MAX_AGE', '600')),
-            ssl_require=True,
+            ssl_require=_ssl_require,
         )
     }
 else:
@@ -162,21 +164,34 @@ LOGGING = {
     },
 }
 
-# Producción (Heroku)
-if not DEBUG:
-    # Django debe confiar en el encabezado de proxy HTTPS
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Seguridad HTTP/Cookies (endurecida por entorno)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'True' if SECURE_MODE else 'False') == 'True'
 
-    SECURE_SSL_REDIRECT = os.getenv('DJANGO_SECURE_SSL_REDIRECT', 'True') == 'True'
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_REFERRER_POLICY = 'same-origin'
+SESSION_COOKIE_SECURE = os.getenv('DJANGO_SESSION_COOKIE_SECURE', 'True' if SECURE_MODE else 'False') == 'True'
+CSRF_COOKIE_SECURE = os.getenv('DJANGO_CSRF_COOKIE_SECURE', 'True' if SECURE_MODE else 'False') == 'True'
 
-    # HSTS
-    SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '3600'))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
-    SECURE_HSTS_PRELOAD = os.getenv('DJANGO_SECURE_HSTS_PRELOAD', 'False') == 'True'
+SESSION_COOKIE_HTTPONLY = os.getenv('DJANGO_SESSION_COOKIE_HTTPONLY', 'True') == 'True'
+CSRF_COOKIE_HTTPONLY = os.getenv('DJANGO_CSRF_COOKIE_HTTPONLY', 'True') == 'True'
+
+SESSION_COOKIE_SAMESITE = os.getenv('DJANGO_SESSION_COOKIE_SAMESITE', 'Lax')
+CSRF_COOKIE_SAMESITE = os.getenv('DJANGO_CSRF_COOKIE_SAMESITE', 'Lax')
+
+SECURE_CONTENT_TYPE_NOSNIFF = os.getenv('DJANGO_SECURE_CONTENT_TYPE_NOSNIFF', 'True') == 'True'
+SECURE_REFERRER_POLICY = os.getenv('DJANGO_SECURE_REFERRER_POLICY', 'same-origin')
+SECURE_CROSS_ORIGIN_OPENER_POLICY = os.getenv('DJANGO_SECURE_CROSS_ORIGIN_OPENER_POLICY', 'same-origin')
+X_FRAME_OPTIONS = os.getenv('DJANGO_X_FRAME_OPTIONS', 'DENY')
+
+# HSTS
+SECURE_HSTS_SECONDS = int(
+    os.getenv('DJANGO_SECURE_HSTS_SECONDS', '31536000' if SECURE_MODE else '0')
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
+SECURE_HSTS_PRELOAD = os.getenv('DJANGO_SECURE_HSTS_PRELOAD', 'False') == 'True'
+
+# Sesiones
+SESSION_EXPIRE_AT_BROWSER_CLOSE = os.getenv('DJANGO_SESSION_EXPIRE_AT_BROWSER_CLOSE', 'True') == 'True'
+SESSION_COOKIE_AGE = int(os.getenv('DJANGO_SESSION_COOKIE_AGE', '28800'))  # 8 horas
 
 # Configuración Jazzmin
 JAZZMIN_SETTINGS = {
