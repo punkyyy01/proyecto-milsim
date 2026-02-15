@@ -125,6 +125,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Autenticación
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/orbat/'
+
 # Localización
 LANGUAGE_CODE = 'es-cl'
 TIME_ZONE = 'America/Santiago'
