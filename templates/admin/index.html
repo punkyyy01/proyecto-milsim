@@ -4,7 +4,14 @@
 
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
 
-{% block content_title %} {% trans 'Dashboard' %} {% endblock %}
+{% block content_title %}
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>{% trans 'Dashboard' %}</div>
+        <div>
+            <a href="{% url 'orbat_visual' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.primary }}" style="margin-left:10px;">Ver ORBAT</a>
+        </div>
+    </div>
+{% endblock %}
 
 {% block breadcrumbs %}
     <ol class="breadcrumb">
