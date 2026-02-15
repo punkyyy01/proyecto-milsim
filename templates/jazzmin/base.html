@@ -1,0 +1,61 @@
+{% load static jazzmin %}
+
+<!DOCTYPE html>
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>{% block title %}{{ jazzmin_settings.site_title }}{% endblock %}</title>
+
+    {# Favicon #}
+    {% if jazzmin_settings.site_logo %}
+        <link rel="icon" href="{% if jazzmin_settings.site_logo.startswith('http') %}{{ jazzmin_settings.site_logo }}{% else %}{% static jazzmin_settings.site_logo %}{% endif %}" sizes="any" type="image/svg+xml">
+    {% endif %}
+
+    {# Custom Fonts #}
+    {% block fonts %} {% endblock %}
+
+    {# Stylesheets #}
+    {% block css %}
+        {% get_jazzmin_settings request as jazzmin_settings %}
+        <link rel="stylesheet" href="{% static 'jazzmin/plugins/fontawesome-free/css/all.min.css' %}">
+        <link rel="stylesheet" href="{% static 'jazzmin/css/adminlte.min.css' %}">
+        {% if jazzmin_settings.theme %}
+            <link rel="stylesheet" href="{% static 'jazzmin/css/themes/'|add:jazzmin_settings.theme|add:'.css' %}">
+        {% endif %}
+        <link rel="stylesheet" href="{% static 'jazzmin/css/main.css' %}">
+
+        {% if jazzmin_settings.custom_css %}
+            <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+        {% endif %}
+    {% endblock css %}
+
+    {% block extrastyle %}{% endblock %}
+    
+    {% block extrahead %}
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    {% endblock %}
+
+    <meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+<body class="hold-transition sidebar-mini {% block bodyclass %}{% endblock %} {% block bodyclass_extra %}{% endblock %}">
+    {% block body %}{% endblock %}
+    {% block javascript %}
+        <script src="{% static 'jazzmin/plugins/jquery/jquery.min.js' %}"></script>
+        <script src="{% static 'jazzmin/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'jazzmin/js/adminlte.min.js' %}"></script>
+        <script src="{% static 'jazzmin/js/jazzmin.js' %}"></script>
+    {% endblock %}
+    {% block extrajs %}{% endblock %}
+</body>
+</html>

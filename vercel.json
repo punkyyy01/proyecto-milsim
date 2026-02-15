@@ -24,6 +24,10 @@
       }
     },
     {
+      "src": "/_vercel/insights/(.*)",
+      "dest": "/_vercel/insights/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "gestion_milsim/wsgi.py"
     }
