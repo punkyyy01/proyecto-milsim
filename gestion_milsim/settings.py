@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Autenticación
 LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/orbat/'
+LOGIN_REDIRECT_URL = '/admin/'
 
 # Localización
 LANGUAGE_CODE = 'es-cl'
@@ -148,13 +148,10 @@ STORAGES = {
         'BACKEND': (
             'django.contrib.staticfiles.storage.StaticFilesStorage'
             if (DEBUG or IS_TESTING)
-            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+            else 'whitenoise.storage.CompressedStaticFilesStorage'
         ),
     },
 }
-
-# WhiteNoise: servir archivos estáticos directamente desde la app
-WHITENOISE_MANIFEST_STRICT = False
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO')
