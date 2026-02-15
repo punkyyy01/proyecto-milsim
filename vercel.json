@@ -1,6 +1,11 @@
 {
   "version": 2,
+  "regions": ["gru1"],
   "builds": [
+    {
+      "src": "staticfiles/**",
+      "use": "@vercel/static"
+    },
     {
       "src": "gestion_milsim/wsgi.py",
       "use": "@vercel/python",
@@ -11,6 +16,13 @@
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "staticfiles/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
     {
       "src": "/(.*)",
       "dest": "gestion_milsim/wsgi.py"
