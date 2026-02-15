@@ -10,6 +10,10 @@ load_dotenv()
 # Ruta base del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Detección de entorno Vercel (Vercel inyecta estas variables automáticamente)
+VERCEL = bool(os.getenv('VERCEL', ''))
+VERCEL_URL = os.getenv('VERCEL_URL', '')
+
 # Seguridad
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
@@ -37,10 +41,20 @@ if not ALLOWED_HOSTS:
 if DEBUG:
     ALLOWED_HOSTS += ['.ngrok-free.app', '.ngrok.io']
 
+# Soporte Vercel
+if VERCEL:
+    ALLOWED_HOSTS += ['.vercel.app']
+    if VERCEL_URL:
+        ALLOWED_HOSTS.append(VERCEL_URL)
+
 # Orígenes confiables para CSRF
 CSRF_TRUSTED_ORIGINS = _split_env_list(os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS'))
 if DEBUG:
     CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app'] + CSRF_TRUSTED_ORIGINS
+if VERCEL:
+    CSRF_TRUSTED_ORIGINS += ['https://*.vercel.app']
+    if VERCEL_URL:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{VERCEL_URL}')
 
 # Aplicaciones
 INSTALLED_APPS = [
@@ -134,6 +148,9 @@ STORAGES = {
         ),
     },
 }
+
+# WhiteNoise: servir archivos estáticos directamente desde la app
+WHITENOISE_MANIFEST_STRICT = False
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO')

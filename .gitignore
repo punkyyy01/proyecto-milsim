@@ -13,10 +13,13 @@ Thumbs.db
 
 db.sqlite3
 db_dump.json
+vercel_db_backup.json
 
 # Temporary scripts
 _check_data.py
 _verify_dump.py
 
-# Django collectstatic output (generated)
-staticfiles/
+# Nota: staticfiles/ NO se ignora — Vercel necesita los archivos
+# estáticos pre-generados porque no puede ejecutar collectstatic
+# en su entorno serverless. Ejecutar 'python manage.py collectstatic'
+# antes de hacer commit/deploy.

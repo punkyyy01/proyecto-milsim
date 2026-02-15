@@ -1,0 +1,13 @@
+/* Minimal ORBAT styles to avoid 404 and provide base visuals */
+:root{
+    --orbat-bg: #0a0e11;
+    --orbat-card: #121820;
+    --orbat-accent: #00d689;
+}
+body{
+    background: var(--orbat-bg);
+    color: #e8e8e8;
+}
+.card{ background: var(--orbat-card); border: none; box-shadow: 0 0 10px rgba(0, 214, 137, 0.15); }
+.unit-name{ font-weight:700; }
+/* Add more styles in project as needed */

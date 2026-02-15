@@ -14,3 +14,6 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gestion_milsim.settings')
 
 application = get_wsgi_application()
+
+# Alias requerido por Vercel @vercel/python runtime
+app = application
