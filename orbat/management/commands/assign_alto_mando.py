@@ -1,99 +1,116 @@
 """
 Management command: assign_alto_mando
-=================================
-Quita `is_superuser` a todos los usuarios excepto al usuario con
-`username == 'Emi'` y añade esos usuarios al grupo `ALTO_MANDO_ERP`.
-
-Uso:
-  python manage.py assign_alto_mando        # pide confirmación interactiva
-  python manage.py assign_alto_mando --yes  # aplica sin pedir confirmación
-
-Este comando es idempotente: puede ejecutarse varias veces.
+====================================
+Revoca el estado de superusuario a todos los usuarios excepto uno
+(ej. "Emi") y los agrega al grupo ALTO_MANDO_ERP.
 """
 
-from typing import Tuple
-
-from django.core.management.base import BaseCommand, CommandError
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand
+from django.db import transaction
 
 
 class Command(BaseCommand):
     help = (
-        "Quita is_superuser a todos los usuarios excepto 'Emi' y los añade al grupo ALTO_MANDO_ERP."
+        "Quita superusuario a todos los usuarios salvo el excluido y los "
+        "agrega al grupo ALTO_MANDO_ERP."
     )
 
     def add_arguments(self, parser):
         parser.add_argument(
+            "--exclude-username",
+            default="Emi",
+            help="Usuario a excluir (por defecto: Emi)",
+        )
+        parser.add_argument(
             "--yes",
             action="store_true",
-            dest="yes",
-            help="Aplicar cambios sin pedir confirmación",
+            help="Ejecutar sin pedir confirmacion",
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Solo mostrar lo que haria, sin cambios",
+        )
+        parser.add_argument(
+            "--use-sqlite",
+            action="store_true",
+            help="Forzar SQLite local (ignora DATABASE_URL)",
         )
 
-    def _perform(self) -> Tuple[int, int, int]:
-        """Realiza la operación y devuelve (total, changed, already)."""
-        try:
-            from django.contrib.auth import get_user_model
-            from django.contrib.auth.models import Group
-        except Exception as exc:
-            raise CommandError(f"Error cargando modelos de auth: {exc}")
+    @staticmethod
+    def _force_sqlite():
+        """Sobrescribe la configuracion de BD para usar SQLite local."""
+        from django.conf import settings
+        from django.db import connections
 
-        User = get_user_model()
+        sqlite_config = {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": settings.BASE_DIR / "db.sqlite3",
+            "ATOMIC_REQUESTS": False,
+            "AUTOCOMMIT": True,
+            "CONN_MAX_AGE": 0,
+            "CONN_HEALTH_CHECKS": False,
+            "OPTIONS": {},
+            "TIME_ZONE": None,
+            "TEST": {},
+        }
 
-        group, _created = Group.objects.get_or_create(name="ALTO_MANDO_ERP")
+        settings.DATABASES["default"] = sqlite_config
 
-        qs = User.objects.exclude(username="Emi")
-        total = qs.count()
-        changed = 0
-        already = 0
-
-        for user in qs:
-            modified = False
-
-            if user.is_superuser:
-                user.is_superuser = False
-                modified = True
-
-            if not user.groups.filter(pk=group.pk).exists():
-                user.groups.add(group)
-                # Adding to group does not mark `user` as dirty for save(),
-                # but we consider this a change to report.
-                modified = True
-
-            if modified:
-                user.save()
-                changed += 1
-            else:
-                already += 1
-
-        return total, changed, already
+        conn = connections["default"]
+        conn.close()
+        del connections._connections.default
 
     def handle(self, *args, **options):
-        yes = options.get("yes")
+        if options.get("use_sqlite"):
+            self._force_sqlite()
 
-        self.stdout.write(self.style.WARNING("Operación: quitar superusuario y añadir al grupo ALTO_MANDO_ERP"))
+        exclude_username = options["exclude_username"]
+        dry_run = options["dry_run"]
+        auto_yes = options["yes"]
 
-        try:
-            from django.contrib.auth import get_user_model
-        except Exception as exc:
-            raise CommandError(f"Error cargando User model: {exc}")
-
+        group, _ = Group.objects.get_or_create(name="ALTO_MANDO_ERP")
         User = get_user_model()
-        total_users = User.objects.exclude(username="Emi").count()
 
-        if total_users == 0:
-            self.stdout.write("No hay usuarios (excluyendo 'Emi') sobre los cuales operar.")
+        qs = User.objects.exclude(username__iexact=exclude_username)
+        total = qs.count()
+        if total == 0:
+            self.stdout.write("No hay usuarios para actualizar.")
             return
 
-        self.stdout.write(f"Usuarios a afectar (excluyendo 'Emi'): {total_users}")
+        superusers_to_demote = qs.filter(is_superuser=True).count()
 
-        if not yes:
-            confirm = input("¿Continuar y aplicar los cambios? [y/N]: ")
+        self.stdout.write(
+            f"Usuarios a procesar: {total} (superusuarios a revocar: {superusers_to_demote})"
+        )
+        self.stdout.write(f"Grupo objetivo: {group.name}")
+
+        if dry_run:
+            preview = list(qs.values_list("username", flat=True)[:10])
+            self.stdout.write("Dry run activado. Ejemplo de usuarios:")
+            for name in preview:
+                self.stdout.write(f"  - {name}")
+            return
+
+        if not auto_yes:
+            confirm = input("Esto quitara superusuario y agregara al grupo. Continuar? [y/N]: ")
             if confirm.lower() not in ("y", "yes"):
-                self.stdout.write("Operación cancelada por el usuario.")
+                self.stdout.write("Operacion cancelada por el usuario.")
                 return
 
-        total, changed, already = self._perform()
+        added_to_group = 0
+        with transaction.atomic():
+            qs.update(is_superuser=False)
+            for user in qs.iterator():
+                if not user.groups.filter(id=group.id).exists():
+                    user.groups.add(group)
+                    added_to_group += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Total usuarios evaluados: {total}"))
-        self.stdout.write(self.style.SUCCESS(f"Usuarios modificados: {changed}"))
-        self.stdout.write(self.style.SUCCESS(f"Usuarios ya en estado esperado: {already}"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Listo. Superusuarios revocados: {superusers_to_demote}. "
+                f"Agregados a {group.name}: {added_to_group}."
+            )
+        )
