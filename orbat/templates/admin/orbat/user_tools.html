@@ -1,0 +1,75 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Herramientas de usuarios (solo grupo "creador")</h1>
+
+{% if messages %}
+<ul class="messagelist">
+  {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<h2>Crear usuario</h2>
+<form method="post" style="margin-bottom:1em">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="create">
+  {{ create_form.as_p }}
+  <button type="submit" class="default">Crear</button>
+</form>
+
+<h2>Usuarios existentes</h2>
+<table class="adminlist" style="width:100%;">
+  <thead>
+    <tr>
+      <th>Usuario</th>
+      <th>Email</th>
+      <th>is_staff</th>
+      <th>is_superuser</th>
+      <th>Grupos</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.is_staff }}</td>
+      <td>{{ u.is_superuser }}</td>
+      <td>{{ u.groups.all|join:", " }}</td>
+      <td>
+        <form method="post" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="toggle_super">
+          <input type="hidden" name="username" value="{{ u.username }}">
+          <button type="submit">Alternar superusuario</button>
+        </form>
+
+        <form method="post" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="username" value="{{ u.username }}">
+          <button type="submit" onclick="return confirm('Eliminar {{ u.username }}?')">Eliminar</button>
+        </form>
+
+        <form method="post" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="set_groups">
+          <input type="hidden" name="username" value="{{ u.username }}">
+          <select name="groups" multiple size="3">
+            {% for g in groups %}
+              <option value="{{ g.name }}" {% if g in u.groups.all %}selected{% endif %}>{{ g.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit">Asignar grupos</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

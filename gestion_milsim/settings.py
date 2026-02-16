@@ -248,6 +248,16 @@ JAZZMIN_SETTINGS = {
     },
 
     "custom_css": "custom_admin.css",
+
+    "custom_links": {
+        "orbat": [{
+            "name": "Gestión de Usuarios",
+            "url": "user_management_list",
+            "icon": "fas fa-users-cog",
+            "permissions": ["auth.view_user"],
+        }],
+    },
+
     "dashboard_widgets": [
         {
             "view": "admin:orbat_miembro_changelist",

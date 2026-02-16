@@ -9,6 +9,15 @@
         <div>{% trans 'Dashboard' %}</div>
         <div>
             <a href="{% url 'orbat_visual' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.primary }}" style="margin-left:10px;">Ver ORBAT</a>
+            {% if request.user.groups.all|length_is:"0" %}{% else %}
+                {% for g in request.user.groups.all %}
+                    {% if g.name == "CREADOR_ERP" %}
+                        <a href="{% url 'user_management_list' %}" class="btn btn-sm btn-warning" style="margin-left:10px;">
+                            <i class="fas fa-users-cog"></i> Gestión Usuarios
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 {% endblock %}

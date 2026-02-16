@@ -1,0 +1,133 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">Inicio</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'user_management_list' %}">Gestión de Usuarios</a></li>
+    <li class="breadcrumb-item active">{% if is_new %}Crear{% else %}Editar{% endif %}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="m-0">
+            <i class="fas fa-{% if is_new %}user-plus{% else %}user-edit{% endif %}"></i>
+            {% if is_new %}Crear Usuario{% else %}Editar: {{ target_user.username }}{% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+
+            <div class="row">
+                {# ── Columna izquierda: datos de cuenta ── #}
+                <div class="col-md-6">
+                    <h6 class="text-uppercase text-muted mb-3"><i class="fas fa-id-badge"></i> Datos de cuenta</h6>
+
+                    <div class="form-group">
+                        <label for="username">Nombre de usuario <span class="text-danger">*</span></label>
+                        <input type="text" id="username" name="username" class="form-control"
+                               value="{% if form_data.username %}{{ form_data.username }}{% endif %}"
+                               required maxlength="150">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">
+                            Contraseña{% if is_new %} <span class="text-danger">*</span>{% endif %}
+                        </label>
+                        <input type="password" id="password" name="password" class="form-control"
+                               {% if is_new %}required{% endif %}
+                               autocomplete="new-password">
+                        {% if not is_new %}
+                        <small class="text-muted">Dejar en blanco para mantener la contraseña actual.</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control"
+                               value="{% if form_data.email %}{{ form_data.email }}{% endif %}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="first_name">Nombre</label>
+                        <input type="text" id="first_name" name="first_name" class="form-control"
+                               value="{% if form_data.first_name %}{{ form_data.first_name }}{% endif %}"
+                               maxlength="150">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last_name">Apellido</label>
+                        <input type="text" id="last_name" name="last_name" class="form-control"
+                               value="{% if form_data.last_name %}{{ form_data.last_name }}{% endif %}"
+                               maxlength="150">
+                    </div>
+                </div>
+
+                {# ── Columna derecha: permisos y grupos ── #}
+                <div class="col-md-6">
+                    <h6 class="text-uppercase text-muted mb-3"><i class="fas fa-shield-alt"></i> Permisos y Grupos</h6>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-switch mb-2">
+                            <input type="checkbox" class="custom-control-input" id="is_active" name="is_active"
+                                   {% if is_new and not form_data %}checked{% elif form_data.is_active %}checked{% endif %}>
+                            <label class="custom-control-label" for="is_active">
+                                <i class="fas fa-check-circle"></i> Activo
+                            </label>
+                            <br><small class="text-muted">El usuario puede iniciar sesión.</small>
+                        </div>
+
+                        <div class="custom-control custom-switch mb-2">
+                            <input type="checkbox" class="custom-control-input" id="is_staff" name="is_staff"
+                                   {% if form_data.is_staff %}checked{% endif %}>
+                            <label class="custom-control-label" for="is_staff">
+                                <i class="fas fa-user-tie"></i> Staff
+                            </label>
+                            <br><small class="text-muted">Puede acceder al panel de administración.</small>
+                        </div>
+
+                        <div class="custom-control custom-switch mb-2">
+                            <input type="checkbox" class="custom-control-input" id="is_superuser" name="is_superuser"
+                                   {% if form_data.is_superuser %}checked{% endif %}>
+                            <label class="custom-control-label" for="is_superuser">
+                                <i class="fas fa-crown text-warning"></i> Superusuario
+                            </label>
+                            <br><small class="text-muted">Acceso total sin restricciones.</small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="text-uppercase text-muted mb-3"><i class="fas fa-layer-group"></i> Grupos ERP</h6>
+
+                    {% for g in erp_groups %}
+                    <div class="custom-control custom-checkbox mb-2">
+                        <input type="checkbox" class="custom-control-input"
+                               id="group_{{ g.pk }}" name="groups" value="{{ g.name }}"
+                               {% if target_user and g in target_user.groups.all %}checked{% endif %}>
+                        <label class="custom-control-label" for="group_{{ g.pk }}">
+                            {{ g.name }}
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No hay grupos ERP configurados. Ejecuta <code>python manage.py setup_erp_permissions</code>.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <hr>
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'user_management_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> {% if is_new %}Crear Usuario{% else %}Guardar Cambios{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
