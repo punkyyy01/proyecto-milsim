@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from .models import Regimiento
 
-@login_required 
+
 def orbat_visual(request):
-    """Renderiza el ORBAT con relaciones prefeteadas para reducir consultas."""
+    """Renderiza el ORBAT con relaciones prefeteadas para reducir consultas.
+    Acceso público — no requiere autenticación."""
 
     regimientos = Regimiento.objects.prefetch_related(
         'miembro_set',
