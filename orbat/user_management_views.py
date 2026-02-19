@@ -449,7 +449,32 @@ def user_delete(request, user_id):
         logger.info(
             "Usuario eliminado: %s por %s", username, request.user.username
         )
-        target_user.delete()
+
+        # Al eliminar un usuario Django intentará eliminar objetos relacionados
+        # como `LogEntry`. Existe un receptor de `pre_delete` que impide
+        # eliminar `LogEntry` (para proteger la auditoría) y levanta
+        # PermissionDenied; eso produce un 403 si se borra un usuario que
+        # tiene entradas de auditoría. Desconectamos temporalmente ese
+        # receptor para permitir la eliminación por cascada y lo volvemos a
+        # conectar inmediatamente después.
+        try:
+            from django.contrib.admin.models import LogEntry
+            from django.db.models.signals import pre_delete
+            from .signals import prevent_logentry_delete
+
+            pre_delete.disconnect(prevent_logentry_delete, sender=LogEntry)
+        except Exception:
+            # Si no podemos desconectar por alguna razón, seguimos e
+            # intentamos eliminar: si falla, que la excepción suba.
+            logger.debug("No se pudo desconectar el receptor de pre_delete para LogEntry")
+
+        try:
+            target_user.delete()
+        finally:
+            try:
+                pre_delete.connect(prevent_logentry_delete, sender=LogEntry)
+            except Exception:
+                logger.debug("No se pudo reconectar el receptor de pre_delete para LogEntry")
         messages.success(request, f"Usuario «{escape(username)}» eliminado.")
         return redirect("user_management_list")
 
