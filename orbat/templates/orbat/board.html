@@ -1,0 +1,48 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tablero de Escuadras</title>
+  <link rel="stylesheet" href="{% static 'orbat_board.css' %}">
+</head>
+<body class="board-body">
+  <header class="board-header">
+    <h1>Tablero de Escuadras</h1>
+    <p class="muted">Arrastra y suelta para mover miembros entre escuadras.</p>
+  </header>
+
+  <main class="board-root" id="board">
+    {% for esc in escuadras %}
+      <section class="column" data-escuadra-id="{{ esc.id }}">
+        <h2 class="column-title">{{ esc.nombre }}</h2>
+        <div class="cards" data-escuadra-id="{{ esc.id }}">
+          {% for m in esc.miembros %}
+            <article class="card" draggable="true" data-persona-id="{{ m.id }}">
+              <div class="card-body">
+                <div class="card-title">{{ m.nombre_milsim|default:m.nombre_milsim }}</div>
+                <div class="card-sub">{{ m.rango }}</div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  </main>
+
+  <!-- Modal conflicto -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-panel">
+      <h3>Escuadra Llena</h3>
+      <p>Selecciona a quién intercambiar:</p>
+      <ul id="modal-list" class="modal-list"></ul>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn btn-secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'orbat_board.js' %}"></script>
+</body>
+</html>

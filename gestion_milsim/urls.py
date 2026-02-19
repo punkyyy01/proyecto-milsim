@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.shortcuts import redirect
-from orbat.views import orbat_visual
+from orbat.views import orbat_visual, transferir_personal, escuadras_dashboard
 from orbat.audit_views import audit_log_list, audit_log_detail
 from orbat.user_management_views import (
     user_list,
@@ -28,4 +28,6 @@ urlpatterns = [
     path('admin/user-tools/', lambda request: redirect('/admin/usuarios/') if request.user.is_authenticated and request.user.is_staff else redirect('/admin/login/?next=/admin/usuarios/'), name='admin_user_tools'),
     path('admin/', admin.site.urls),
     path('orbat/', orbat_visual, name='orbat_visual'),
+    path('orbat/board/', escuadras_dashboard, name='escuadras_dashboard'),
+    path('api/transferir_personal/', transferir_personal, name='transferir_personal'),
 ]

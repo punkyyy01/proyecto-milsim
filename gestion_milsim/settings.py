@@ -101,6 +101,11 @@ WSGI_APPLICATION = 'gestion_milsim.wsgi.application'
 
 # Base de datos
 DATABASE_URL = (os.getenv('DATABASE_URL') or '').strip() or None
+# En desarrollo local podemos preferir SQLite para evitar depender de servicios Docker
+# Si `DEBUG` es True y `DEV_USE_SQLITE` no está a 'False', forzamos sqlite ignorando DATABASE_URL
+if DEBUG and os.getenv('DEV_USE_SQLITE', 'True') == 'True':
+    DATABASE_URL = None
+
 if DATABASE_URL:
     _ssl_require = os.getenv('DJANGO_DB_SSL_REQUIRE', 'False') == 'True'
     DATABASES = {

@@ -1,0 +1,25 @@
+/* Estilos mínimos tipo Trello con estética oscura */
+:root{
+  --bg:#0b1220; --panel:#0f1724; --muted:#9aa4b2; --accent:#2b7a78; --card:#111827; --danger:#8b1d1d;
+}
+body.board-body{background:var(--bg);color:#e6eef6;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:1rem}
+.board-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1rem}
+.board-header h1{margin:0;font-size:1.25rem}
+.muted{color:var(--muted);margin:0}
+.board-root{display:flex;gap:1rem;align-items:flex-start;overflow:auto;padding-bottom:2rem}
+.column{width:280px;background:linear-gradient(180deg,var(--panel),#0b1220);padding:0.75rem;border-radius:8px}
+.column-title{font-size:1rem;color:#dbeafe;margin:0 0 0.5rem 0}
+.cards{min-height:40px;display:flex;flex-direction:column;gap:0.5rem}
+.card{background:var(--card);padding:0.5rem;border-radius:6px;color:#e6eef6;box-shadow:0 1px 0 rgba(0,0,0,0.6);cursor:grab}
+.card:active{cursor:grabbing}
+.card-body{display:flex;flex-direction:column}
+.card-title{font-weight:600}
+.card-sub{font-size:0.85rem;color:var(--muted)}
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);}
+.modal.hidden{display:none}
+.modal-panel{background:#071023;padding:1rem;border-radius:8px;min-width:320px;border:1px solid rgba(255,255,255,0.04)}
+.modal-list{list-style:none;padding:0;margin:0 0 1rem 0;max-height:240px;overflow:auto}
+.modal-list li{padding:0.5rem;border-radius:6px;background:#071428;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center}
+.btn{padding:0.4rem 0.7rem;border-radius:6px;border:none;cursor:pointer}
+.btn-secondary{background:#374151;color:#e6eef6}
+.btn-primary{background:var(--accent);color:#051316}
