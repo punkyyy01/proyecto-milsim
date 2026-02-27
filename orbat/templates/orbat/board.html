@@ -9,26 +9,48 @@
 </head>
 <body class="board-body">
   <header class="board-header">
-    <h1>Tablero de Escuadras</h1>
-    <p class="muted">Arrastra y suelta para mover miembros entre escuadras.</p>
+    <h1>Panel de Control — ORBAT</h1>
+    <p class="muted">Vista de alta densidad: usa atajos y acciones rápidas.</p>
   </header>
-
   <main class="board-root" id="board">
-    {% for esc in escuadras %}
-      <section class="column" data-escuadra-id="{{ esc.id }}">
-        <h2 class="column-title">{{ esc.nombre }}</h2>
-        <div class="cards" data-escuadra-id="{{ esc.id }}">
-          {% for m in esc.miembros %}
-            <article class="card" draggable="true" data-persona-id="{{ m.id }}">
-              <div class="card-body">
-                <div class="card-title">{{ m.nombre_milsim|default:m.nombre_milsim }}</div>
-                <div class="card-sub">{{ m.rango }}</div>
-              </div>
-            </article>
+    <section class="panel">
+      <table class="terminal-table" role="grid" aria-describedby="panel-desc">
+        <caption id="panel-desc" class="sr-only">Listado compacto de escuadras y acciones rápidas</caption>
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-unidad">UNIDAD</th>
+            <th class="col-tipo">TIPO</th>
+            <th class="col-miembros">MIEMBROS</th>
+            <th class="col-acciones">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for esc in escuadras %}
+            <tr data-escuadra-id="{{ esc.id }}">
+              <td class="col-id">{{ esc.id }}</td>
+              <td class="col-unidad">{{ esc.nombre }}</td>
+              <td class="col-tipo">Escuadra</td>
+              <td class="col-miembros">
+                {% with esc.miembros|length as mcount %}
+                  <span class="muted">{{ mcount }} / 5</span>
+                {% endwith %}
+                <div class="members-inline">
+                  {% for m in esc.miembros %}
+                    <span class="member">{{ m.nombre_milsim }}</span>{% if not forloop.last %},{% endif %}
+                  {% endfor %}
+                </div>
+              </td>
+              <td class="col-acciones">
+                <a href="#" class="action add">[+ADD]</a>
+                <a href="#" class="action edit">[EDIT]</a>
+                <a href="#" class="action view">[VIEW]</a>
+              </td>
+            </tr>
           {% endfor %}
-        </div>
-      </section>
-    {% endfor %}
+        </tbody>
+      </table>
+    </section>
   </main>
 
   <!-- Modal conflicto -->
